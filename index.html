@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oráculo Numerológico Interactivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a1a;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.3s ease, border 0.3s ease;
+        }
+        .glassmorphism:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .main-title {
+            font-family: 'Playfair Display', serif;
+        }
+        .glow-button {
+            transition: all 0.3s ease;
+            box-shadow: 0 0 5px rgba(0, 191, 255, 0.5), 0 0 10px rgba(0, 191, 255, 0.3);
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.8), 0 0 25px rgba(0, 191, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        .calendar-day {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .calendar-day:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .day-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.2); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+        .modal-enter {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .flip-card {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card.is-flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+            justify-content: center; 
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div id="particles-js"></div>
+
+    <main class="container mx-auto p-4 md:p-8 relative z-10">
+
+        <!-- PASO 1: EL PORTAL DE ENTRADA -->
+        <section id="portal" class="min-h-screen flex flex-col items-center justify-center text-center transition-opacity duration-1000">
+            <h1 class="main-title text-5xl md:text-7xl font-bold text-white mb-4">Oráculo Numerológico</h1>
+            <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl">Descubre los secretos que los números tienen para ti. Ingresa tu nombre y fecha de nacimiento para revelar tu códice cósmico.</p>
+            
+            <form id="numerology-form" class="w-full max-w-lg space-y-4">
+                <div>
+                    <input type="text" id="name" placeholder="Tu nombre completo" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
+                </div>
+                <div>
+                    <input type="date" id="birthdate" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
+                </div>
+                <button type="submit" class="w-full p-3 bg-cyan-500 text-white font-bold rounded-lg text-lg glow-button">
+                    Revelar mi Destino
+                </button>
+            </form>
+        </section>
+
+        <!-- PASO 2: EL CÓDICE PERSONAL (Resultados) -->
+        <section id="results" class="hidden opacity-0 transition-opacity duration-1000 space-y-12">
+            <div class="pt-8">
+                 <h2 class="main-title text-4xl md:text-5xl font-bold text-center mb-12 text-white">Tu Códice Personal, <span id="user-name-title" class="text-cyan-400"></span></h2>
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+                    <div id="camino-vida-card" class="glassmorphism rounded-2xl h-56"></div>
+                    <div id="alma-card" class="glassmorphism rounded-2xl h-56"></div>
+                    <div id="personalidad-card" class="glassmorphism rounded-2xl h-56"></div>
+                    <div id="ano-personal-card" class="glassmorphism rounded-2xl h-56"></div>
+                 </div>
+            </div>
+            
+            <!-- SECCIÓN CALCULADORA DE SINERGIA -->
+            <div id="sinergia-section">
+                <h2 class="main-title text-4xl md:text-5xl font-bold text-center mb-8 text-white">Sinergia Cósmica</h2>
+                <div class="glassmorphism p-6 rounded-2xl max-w-2xl mx-auto">
+                    <p class="text-center mb-4">Descubre tu compatibilidad numerológica con otra persona.</p>
+                    <form id="sinergia-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="other-name" placeholder="Nombre de la otra persona" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition" >
+                        <input type="date" id="other-birthdate" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition" >
+                        <button type="submit" class="md:col-span-2 w-full p-3 bg-purple-500 text-white font-bold rounded-lg text-lg glow-button">Calcular Sinergia</button>
+                    </form>
+                    <div id="sinergia-result" class="mt-6 text-center min-h-[50px]"></div>
+                </div>
+            </div>
+
+
+            <!-- Sección del Calendario -->
+            <div>
+                <h2 class="main-title text-4xl md:text-5xl font-bold text-center mb-8 text-white">Calendario Cósmico</h2>
+                <div class="glassmorphism p-4 sm:p-6 rounded-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <button id="prev-month" class="p-2 rounded-full hover:bg-white/10 transition">&lt;</button>
+                        <h3 id="month-year" class="text-2xl font-bold text-white"></h3>
+                        <button id="next-month" class="p-2 rounded-full hover:bg-white/10 transition">&gt;</button>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- MODAL PARA DETALLES DEL DÍA -->
+    <div id="day-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 hidden">
+        <div id="modal-content" class="glassmorphism p-6 rounded-2xl max-w-md w-full text-center modal-enter"></div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            "particles": { "number": { "value": 80, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#ffffff" }, "shape": { "type": "circle" }, "opacity": { "value": 0.5, "random": false }, "size": { "value": 3, "random": true }, "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.4, "width": 1 }, "move": { "enable": true, "speed": 2, "direction": "none", "out_mode": "out" } },
+            "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" } } },
+            "retina_detect": true
+        });
+
+        // --- LÓGICA DE NUMEROLOGÍA ---
+        
+        function reducirNumero(n, preserveMasters = true) {
+            if (preserveMasters && (n === 11 || n === 22)) return n;
+            let sum = String(n).split('').reduce((acc, digit) => acc + parseInt(digit), 0);
+            if (sum > 9 && (!preserveMasters || (sum !== 11 && sum !== 22))) {
+                return reducirNumero(sum, preserveMasters);
+            }
+            return sum;
+        }
+
+        const letterValues = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 1, k: 2, l: 3, m: 4, n: 5, o: 6, p: 7, q: 8, r: 9, s: 1, t: 2, u: 3, v: 4, w: 5, x: 6, y: 7, z: 8 };
+        
+        function calculateNameNumber(name, type) {
+            const vowels = 'aeiouáéíóú';
+            let sum = 0;
+            for (let char of name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")) {
+                if (type === 'vowels' && vowels.includes(char)) {
+                    sum += letterValues[char] || 0;
+                } else if (type === 'consonants' && !vowels.includes(char) && letterValues[char]) {
+                    sum += letterValues[char] || 0;
+                }
+            }
+            return reducirNumero(sum);
+        }
+        
+        const infoNumeros = {
+            alma: {
+                1: "Deseas liderar y ser independiente.", 2: "Buscas la armonía y la cooperación.", 3: "Anhelas expresarte y socializar.",
+                4: "Necesitas orden y estabilidad.", 5: "Ansías libertad, aventura y cambio.", 6: "Tu mayor deseo es el amor y la responsabilidad familiar.",
+                7: "Buscas la verdad a través del análisis y la introspección.", 8: "Anhelas el éxito material y el poder.", 9: "Tu alma busca servir a los demás de forma desinteresada.",
+                11: "Deseas inspirar y elevar la conciencia de otros.", 22: "Anhelas construir algo grande y duradero para la humanidad."
+            },
+            personalidad: {
+                1: "Proyectas una imagen de líder seguro y capaz.", 2: "Pareces diplomático, amable y pacífico.", 3: "Te ven como alguien sociable, encantador y creativo.",
+                4: "Proyectas una imagen de seriedad, confianza y trabajo duro.", 5: "Pareces versátil, aventurero y amante de la libertad.",
+                6: "Te perciben como alguien responsable, protector y hogareño.", 7: "Proyectas un aire de misterio, sabiduría e intelecto.",
+                8: "Te ven como una persona poderosa, exitosa y con autoridad.", 9: "Pareces compasivo, humanitario y carismático.",
+                11: "Proyectas una intensa energía espiritual e idealismo.", 22: "Te ven como un maestro constructor, capaz de lograr lo imposible."
+            },
+            conexiones: {
+                1: { natural: "1, 5, 7", compatible: "2, 3, 9", desafio: "4, 6, 8" }, 2: { natural: "2, 4, 8", compatible: "1, 3, 6, 9", desafio: "5, 7" },
+                3: { natural: "3, 6, 9", compatible: "1, 2, 5", desafio: "4, 7, 8" }, 4: { natural: "2, 4, 8", compatible: "3, 6, 7", desafio: "1, 5, 9" },
+                5: { natural: "1, 5, 7", compatible: "3, 9", desafio: "2, 4, 6", neutral: "8" }, 6: { natural: "3, 6, 9", compatible: "2, 4, 8", desafio: "1, 5, 7" },
+                7: { natural: "1, 5, 7", compatible: "4, 6", desafio: "2, 3, 8, 9" }, 8: { natural: "2, 4, 8", compatible: "5, 6", desafio: "1, 3, 7, 9" },
+                9: { natural: "3, 6, 9", compatible: "1, 2, 5", desafio: "4, 7, 8" },
+            },
+            añoPersonal: {
+                1: { color: "Rojo", joya: "Rubí", palabra: "COMIENZO", desc: "Es tiempo para sembrar. Nuevos proyectos, cambios y planes. Asume el control." },
+                2: { color: "Anaranjado", joya: "Piedra de Luna", palabra: "PACIENCIA", desc: "Momento de unión, diplomacia y calma. Fortalece relaciones y no fuerces las cosas." },
+                3: { color: "Amarillo", joya: "Topacio", palabra: "GOZO", desc: "Año para socializar, crear y comunicar. Diviértete, sonríe y expande tu círculo." },
+                4: { color: "Verde", joya: "Esmeralda", palabra: "PRÁCTICO", desc: "Año de ardua labor y construcción. Organiza, ahorra y construye bases firmes." },
+                5: { color: "Azul", joya: "Turquesa", palabra: "CAMBIO", desc: "Espera lo inesperado. Año de libertad, viajes y aventura. Aléjate de la rutina." },
+                6: { color: "Añil", joya: "Perla", palabra: "RESPONSABILIDAD", desc: "Centrado en el amor, hogar y familia. Acepta obligaciones y embellece tu entorno." },
+                7: { color: "Morado", joya: "Amatista", palabra: "FE", desc: "Año espiritual para la reflexión. Tómate tiempo para ti, medita y contacta con la naturaleza." },
+                8: { color: "Beige/Rosa", joya: "Diamante", palabra: "LOGRO", desc: "Tiempo de cosecha, éxito y dinero. Invierte, organiza y sé ejecutivo." },
+                9: { color: "Tonos Pastel", joya: "Ópalo", palabra: "TERMINACIÓN", desc: "Cierre de ciclos. Limpia y elimina lo que ya no sirve. Deja ir el pasado." },
+                11: { color: "Plata", joya: "Plata", palabra: "INTUICIÓN", desc: "Año de activación espiritual. Brilla y establece nuevas normas. Crecimiento interior." },
+                22: { color: "Coral", joya: "Cobre", palabra: "CONSTRUCCIÓN", desc: "Colabora en proyectos importantes para la sociedad. Materializa tus sueños a gran escala." }
+            },
+            diaPersonal: { 
+                 1: { color: "Rojo", hex: "#ef4444", grad: "from-red-500 to-orange-500", consejo: "Hoy es perfecto para presentar esa nueva idea que tienes. ¡Toma la iniciativa!", afirmacion: "Confío en mi capacidad para liderar y empezar de nuevo.", ropa: { color: "Rojo", frase: "potenciar tu energía de liderazgo e iniciativa." } },
+                 2: { color: "Naranja", hex: "#f97316", grad: "from-orange-400 to-amber-400", consejo: "Escucha más de lo que hablas. La clave de hoy está en la diplomacia y el trabajo en equipo.", afirmacion: "Atraigo relaciones armoniosas a través de la paciencia y la cooperación.", ropa: { color: "Naranja", frase: "fomentar la cooperación y la calidez en tus interacciones." } },
+                 3: { color: "Amarillo", hex: "#eab308", grad: "from-yellow-300 to-lime-300", consejo: "Comunícate, socializa y ríe. Tu energía positiva atraerá buenas oportunidades.", afirmacion: "Expreso mi alegría y creatividad libremente.", ropa: { color: "Amarillo", frase: "atraer la alegría y estimular tu creatividad." } },
+                 4: { color: "Verde", hex: "#22c55e", grad: "from-green-400 to-teal-400", consejo: "Es día de arremangarse. Organiza tus finanzas, tu casa o tu agenda. El esfuerzo de hoy dará frutos.", afirmacion: "Construyo mi futuro sobre bases sólidas y seguras.", ropa: { color: "Verde", frase: "atraer el equilibrio y la energía de crecimiento." } },
+                 5: { color: "Azul", hex: "#06b6d4", grad: "from-cyan-400 to-sky-400", consejo: "Rompe la rutina. Prueba un camino diferente para ir al trabajo, come algo nuevo o atrévete a esa aventura.", afirmacion: "Acepto el cambio con valentía y disfruto de mi libertad.", ropa: { color: "Azul", frase: "facilitar la comunicación y la expresión de tus ideas." } },
+                 6: { color: "Añil", hex: "#4338ca", grad: "from-indigo-600 to-blue-800", consejo: "Llama a un ser querido o dedica tiempo a embellecer tu hogar. El amor y el deber llaman.", afirmacion: "Asumo mis responsabilidades con amor y dedicación.", ropa: { color: "Añil", frase: "fortalecer los lazos afectivos y la armonía en el hogar." } },
+                 7: { color: "Violeta", hex: "#9333ea", grad: "from-purple-500 to-fuchsia-500", consejo: "Evita las multitudes. Busca un momento de soledad para leer, meditar o simplemente analizar tus pensamientos.", afirmacion: "Encuentro sabiduría y paz en mi mundo interior.", ropa: { color: "Morado", frase: "conectar con tu intuición y tu lado espiritual." } },
+                 8: { color: "Rosa", hex: "#ec4899", grad: "from-pink-400 to-rose-400", consejo: "Es un día de poder. Ideal para negociar un aumento, cerrar un trato o presentar un presupuesto. ¡Piensa en grande!", afirmacion: "Soy un imán para el éxito, la abundancia y el poder material.", ropa: { color: "Beige, Rosa o Café", frase: "alinearte con la energía de la abundancia y el éxito." } },
+                 9: { color: "Pastel", hex: "#c4b5fd", grad: "from-indigo-200 to-purple-200", consejo: "Suelta lo que ya no sirve. Termina ese proyecto pendiente, dona ropa que no usas o perdona una vieja ofensa.", afirmacion: "Libero el pasado con gratitud y me abro a la sabiduría universal.", ropa: { color: "Tonos Pastel", frase: "fomentar la compasión y la generosidad." } },
+                 11: { color: "Blanco/Gris", hex: "#d1d5db", grad: "from-gray-200 to-slate-200", consejo: "Presta atención a tus corazonadas y sueños. Hoy tu intuición está en su punto más alto.", afirmacion: "Mi intuición es mi guía más poderosa.", ropa: { color: "Blanco, Negro o Gris", frase: "amplificar tu intuición y tu conexión espiritual." } },
+                 22: { color: "Coral", hex: "#fb923c", grad: "from-red-300 to-orange-300", consejo: "Tus acciones de hoy pueden tener un gran impacto. Piensa en cómo puedes beneficiar a tu comunidad.", afirmacion: "Materializo grandes sueños para el bien de todos.", ropa: { color: "Coral o Castaño", frase: "materializar tus ideas y construir proyectos sólidos." } }
+            },
+            periodos: {
+                1: { debil: "Oct, Nov, Dic", fuerte: "21 Mar - 28 Abr, 23 Jul - 31 Ago", favorables: ["Domingo", "Lunes"] },
+                2: { debil: "Dic, Ene, Feb", fuerte: "22 Jun - 29 Jul", favorables: ["Lunes", "Domingo"] },
+                3: { debil: "Oct, 1-18 Nov", fuerte: "19 Feb - 28 Mar, 21 Nov - 28 Dic", favorables: ["Lunes", "Miércoles", "Jueves"] },
+                4: { debil: "Oct, Nov, Dic", fuerte: "21 Mar - 30 Abr, 23 Jul - 29 Ago", favorables: ["Sábado", "Domingo", "Lunes"] },
+                5: { debil: "1-21 May, Dic", fuerte: "22 May - 30 Jun, 22 Ago - 30 Sep", favorables: ["Miércoles", "Viernes"] },
+                6: { debil: "1-20 Abr, Nov", fuerte: "21 Abr - 28 May, 23 Sep - 30 Oct", favorables: ["Viernes", "Miércoles"] },
+                7: { debil: "Ene, Feb", fuerte: "22 Jun - 30 Jul", favorables: ["Domingo", "Lunes", "Miércoles"] },
+                8: { debil: "27-28 Feb, Mar, Abr", fuerte: "21 Dic - 27 Ene, 20 Ene - 26 Feb", favorables: ["Sábado"] },
+                9: { debil: "1-20 Mar, May, Jun, 1-20 Oct, 27 Nov - 27 Dic", fuerte: "21 Mar - 30 Abr, 23 Oct - 30 Nov", favorables: ["Martes", "Viernes"] }
+            }
+        };
+
+        function getMoonPhase(date) {
+            const dayOfMonth = date.getDate();
+            if (dayOfMonth < 4) return {icon: "🌑", name: "Luna Nueva"};
+            if (dayOfMonth < 11) return {icon: "🌓", name: "Cuarto Creciente"};
+            if (dayOfMonth < 18) return {icon: "🌕", name: "Luna Llena"};
+            if (dayOfMonth < 26) return {icon: "🌗", name: "Cuarto Menguante"};
+            return {icon: "🌑", name: "Luna Nueva"};
+        }
+        
+        const mercurioRetrogrado = [
+            { start: new Date(2025, 3, 1), end: new Date(2025, 3, 25) }, // Abril 2025
+            { start: new Date(2025, 7, 4), end: new Date(2025, 7, 28) }, // Agosto 2025
+            { start: new Date(2025, 10, 25), end: new Date(2025, 11, 15) }, // Nov-Dic 2025
+        ];
+
+        function isMercurioRetrogrado(date) {
+            return mercurioRetrogrado.some(period => date >= period.start && date <= period.end);
+        }
+
+        const form = document.getElementById('numerology-form');
+        const portalSection = document.getElementById('portal');
+        const resultsSection = document.getElementById('results');
+        const dayModal = document.getElementById('day-modal');
+        const modalContent = document.getElementById('modal-content');
+
+        let currentUserData = {};
+        let currentDate = new Date();
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            if (!name) return;
+            const birthdateValue = document.getElementById('birthdate').value;
+            if (!birthdateValue) return;
+            const birthdate = new Date(birthdateValue + 'T00:00:00'); 
+            
+            const diaNac = birthdate.getDate();
+            const mesNac = birthdate.getMonth() + 1;
+            const anoNac = birthdate.getFullYear();
+            
+            const numeroDiaNacimiento = reducirNumero(diaNac, false);
+            const caminoVida = reducirNumero(diaNac + mesNac + reducirNumero(anoNac));
+            const alma = calculateNameNumber(name, 'vowels');
+            const personalidad = calculateNameNumber(name, 'consonants');
+            const destino = reducirNumero(alma + personalidad);
+
+            const hoy = new Date();
+            const anoPlanetario = (hoy.getMonth() > birthdate.getMonth() || (hoy.getMonth() === birthdate.getMonth() && hoy.getDate() >= birthdate.getDate())) ? hoy.getFullYear() : hoy.getFullYear() - 1;
+            const anoPersonal = reducirNumero(diaNac + mesNac + anoPlanetario);
+
+            currentUserData = { name, birthdate, diaNac, numeroDiaNacimiento, caminoVida, alma, personalidad, destino, anoPersonal };
+
+            document.getElementById('user-name-title').textContent = name.split(' ')[0];
+            displayResults();
+            buildCalendar(currentDate);
+
+            portalSection.style.opacity = 0;
+            setTimeout(() => {
+                portalSection.classList.add('hidden');
+                resultsSection.classList.remove('hidden');
+                resultsSection.style.opacity = 1;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
+        });
+        
+        document.getElementById('sinergia-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const otherName = document.getElementById('other-name').value;
+            const otherBirthdateValue = document.getElementById('other-birthdate').value;
+            if(!otherName || !otherBirthdateValue) {
+                document.getElementById('sinergia-result').innerHTML = `<p class="text-red-400">Por favor, completa ambos campos.</p>`;
+                return;
+            }
+
+            const otherBirthdate = new Date(otherBirthdateValue + 'T00:00:00');
+            const otherCamino = reducirNumero(otherBirthdate.getDate() + (otherBirthdate.getMonth() + 1) + reducirNumero(otherBirthdate.getFullYear()));
+            const myCamino = currentUserData.caminoVida;
+            const myConexiones = infoNumeros.conexiones[myCamino];
+            let resultado = "Neutral";
+            let desc = "Una relación con potencial para crecer en cualquier dirección con esfuerzo.";
+            
+            if (myConexiones.natural.split(', ').includes(String(otherCamino))) {
+                resultado = "Natural 🍃";
+                desc = "Fluyen juntos sin esfuerzo. Una conexión fácil y cómoda.";
+            } else if (myConexiones.compatible.split(', ').includes(String(otherCamino))) {
+                resultado = "Compatible ✨";
+                desc = "Se entienden y apoyan mutuamente. Gran potencial para la armonía.";
+            } else if (myConexiones.desafio.split(', ').includes(String(otherCamino))) {
+                resultado = "Desafío 💥";
+                desc = "Una relación kármica con grandes lecciones que aprender. Requiere paciencia y comprensión.";
+            }
+
+            document.getElementById('sinergia-result').innerHTML = `<h4 class="font-bold text-xl text-purple-300">${resultado}</h4><p class="text-white">${desc}</p>`;
+        });
+
+        function displayResults() {
+            const { caminoVida, alma, personalidad, destino, anoPersonal } = currentUserData;
+            
+            const conexiones = infoNumeros.conexiones[caminoVida];
+            document.getElementById('camino-vida-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Camino de Vida</h3><p class="text-7xl font-bold text-white">${caminoVida}</p><p class="text-xs text-gray-400">Tu misión y lecciones.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Conexiones</h3><div class="space-y-1 text-left w-full"><p class="text-xs text-white leading-tight"><strong class="text-green-400">Natural:</strong> ${conexiones.natural}</p><p class="text-xs text-white leading-tight"><strong class="text-blue-400">Compatible:</strong> ${conexiones.compatible}</p><p class="text-xs text-white leading-tight"><strong class="text-red-400">Desafío:</strong> ${conexiones.desafio}</p></div></div></div></div>`;
+            
+            document.getElementById('alma-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Alma</h3><p class="text-7xl font-bold text-white">${alma}</p><p class="text-xs text-gray-400">Tus deseos internos.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Tu Deseo Interno</h3><p class="text-white text-sm leading-tight">${infoNumeros.alma[alma]}</p></div></div></div>`;
+            
+            document.getElementById('personalidad-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Personalidad</h3><p class="text-7xl font-bold text-white">${personalidad}</p><p class="text-xs text-gray-400">Cómo te ven los demás.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Tu Máscara Social</h3><p class="text-white text-sm leading-tight">${infoNumeros.personalidad[personalidad]}</p><h3 class="font-bold text-base text-cyan-300 mt-2">Destino: ${destino}</h3></div></div></div>`;
+            
+            const anoInfo = infoNumeros.añoPersonal[anoPersonal];
+            document.getElementById('ano-personal-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Año Personal</h3><p class="text-7xl font-bold text-white">${anoPersonal}</p><p class="text-xs text-gray-400">Tu energía para este año.</p></div><div class="flip-card-back"><h3 class="font-bold text-lg mb-2" style="color:${anoInfo.color.toLowerCase()}">${anoInfo.palabra}</h3><div class="space-y-2"><p class="text-white text-sm"><strong>Joya:</strong> ${anoInfo.joya}</p><p class="text-white text-xs leading-tight">${anoInfo.desc}</p></div></div></div></div>`;
+        }
+        
+        function buildCalendar(date) {
+            const { anoPersonal, numeroDiaNacimiento } = currentUserData;
+            const month = date.getMonth();
+            const year = date.getFullYear();
+
+            document.getElementById('month-year').textContent = date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase());
+            const calendarGrid = document.getElementById('calendar-grid');
+            calendarGrid.innerHTML = '';
+            const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            diasSemana.forEach(dia => { calendarGrid.innerHTML += `<div class="text-center font-bold text-cyan-300">${dia}</div>`; });
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let i = 0; i < firstDayOfMonth; i++) { calendarGrid.innerHTML += `<div></div>`; }
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const currentDayDate = new Date(year, month, i);
+                const diaDeLaSemana = diasSemana[currentDayDate.getDay()];
+                const periodosDiaNac = infoNumeros.periodos[numeroDiaNacimiento] || { favorables: [] };
+                const isFavorable = periodosDiaNac.favorables.includes(diaDeLaSemana);
+                
+                const mesPersonal = reducirNumero(anoPersonal + (month + 1));
+                const diaPersonal = reducirNumero(mesPersonal + i);
+                const diaInfo = infoNumeros.diaPersonal[diaPersonal];
+                let dayClasses = `calendar-day glassmorphism p-2 rounded-lg text-center cursor-pointer flex flex-col items-center justify-center aspect-square`;
+                if (new Date().toDateString() === currentDayDate.toDateString()) dayClasses += ' day-pulse';
+                const moonPhase = getMoonPhase(currentDayDate);
+                const isRetrograde = isMercurioRetrogrado(currentDayDate);
+                const dayElement = document.createElement('div');
+                dayElement.className = dayClasses;
+                dayElement.style.background = `linear-gradient(45deg, ${diaInfo.grad.split(' ')[0].replace('from-', 'var(--tw-gradient-from, #000)')}, ${diaInfo.grad.split(' ')[1].replace('to-', 'var(--tw-gradient-to, #000)')})`;
+                
+                dayElement.innerHTML = `<span class="text-2xl font-bold" style="color: ${diaPersonal > 9 ? 'black' : 'white'}; text-shadow: 0 0 5px black;">${i}</span><span class="text-sm font-bold" style="color: ${diaPersonal > 9 ? 'black' : 'white'}; text-shadow: 0 0 5px black;">${diaPersonal}</span><div class="flex text-xs mt-1 gap-1 items-center"><span>${moonPhase.icon}</span>${isRetrograde ? '<span>⏪</span>' : ''}${isFavorable ? '<span class="text-yellow-300">⭐</span>' : ''}</div>`;
+                dayElement.onclick = () => showDayDetails(currentDayDate, diaPersonal, diaInfo, moonPhase, isRetrograde);
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        function showDayDetails(date, diaPersonal, diaInfo, moonPhase, isRetrograde) {
+            modalContent.innerHTML = `
+                <p class="text-xl font-bold mb-2">${date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div class="mb-4">
+                    <p class="text-6xl font-bold" style="color:${diaInfo.hex}">${diaPersonal}</p>
+                    <p class="text-xl font-bold" style="color:${diaInfo.hex}">Día ${diaInfo.color}</p>
+                </div>
+                <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-yellow-300 mb-1 flex items-center"><span class="w-4 h-4 rounded-full mr-2 border border-white/20" style="background-color:${diaInfo.hex};"></span>Vibración de Color</h4>
+                    <p class="text-sm pl-6">Viste de <strong>${diaInfo.ropa.color}</strong> para ${diaInfo.ropa.frase}</p>
+                </div>
+                <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-cyan-300 mb-1">💡 Consejo del Día</h4>
+                    <p class="text-sm pl-6">${diaInfo.consejo}</p>
+                </div>
+                 <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-purple-300 mb-1">✨ Afirmación del Día</h4>
+                    <p class="text-sm italic pl-6">"${diaInfo.afirmacion}"</p>
+                </div>
+                <div class="text-left space-y-2 text-xs mt-4">
+                    <p><strong>Fase Lunar:</strong> ${moonPhase.icon} ${moonPhase.name}</p>
+                    ${isRetrograde ? '<p class="text-red-400"><strong>Alerta:</strong> Mercurio Retrógrado</p>' : ''}
+                </div>
+                <button id="close-modal" class="mt-6 w-full p-2 bg-cyan-500 text-white font-bold rounded-lg glow-button">Cerrar</button>`;
+            dayModal.classList.remove('hidden');
+        }
+
+        dayModal.addEventListener('click', (e) => { if (e.target.id === 'day-modal' || e.target.id === 'close-modal') dayModal.classList.add('hidden'); });
+        document.getElementById('prev-month').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); buildCalendar(currentDate); });
+        document.getElementById('next-month').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); buildCalendar(currentDate); });
+
+    </script>
+</body>
+</html>
