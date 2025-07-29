@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sendero 11 - Códice Numerológico</title>
+    <!-- SDKs de Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <!-- Librerías para PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -93,10 +96,8 @@
                     <h2 class="main-title text-3xl sm:text-4xl font-bold text-center mb-8 text-white">Registro de Clientes</h2>
                     <div class="glassmorphism p-6 rounded-2xl max-w-4xl mx-auto">
                         <div id="analytics-table-container" class="overflow-x-auto">
-                           <!-- La tabla de registros se generará aquí -->
+                           <p class="text-gray-400">Cargando registros...</p>
                         </div>
-                        <button id="clear-analytics-btn" class="mt-4 p-2 bg-red-600 text-white font-bold rounded-lg text-sm">Limpiar Registro</button>
-                        <p class="text-xs text-gray-500 mt-2">Nota: El registro se guarda en este navegador. Si limpias la caché o usas otro dispositivo, se perderá.</p>
                     </div>
                 </div>
             </div>
@@ -451,6 +452,29 @@
     // 3. LÓGICA PRINCIPAL DE LA APLICACIÓN
     // ---------------------------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', function() {
+        // --- INICIALIZACIÓN DE FIREBASE ---
+        // PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE
+        const firebaseConfig = {
+          apiKey: "AIzaSyDUQc_DISkiXA5OFEEBDhKwYiYmUj98Eh4",
+          authDomain: "numerologia-sendero11.firebaseapp.com",
+          projectId: "numerologia-sendero11",
+          storageBucket: "numerologia-sendero11.firebasestorage.app",
+          messagingSenderId: "1001480790018",
+          appId: "1:1001480790018:web:fa17a029b86ad24638071b",
+          measurementId: "G-ZLB0DYTJBJ"
+        };
+        
+        let db;
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.firestore();
+        } catch (e) {
+            console.error("Error al inicializar Firebase. Asegúrate de pegar tu 'firebaseConfig' correctamente.", e);
+            alert("Error de configuración de la base de datos. Contacta al administrador.");
+        }
+
         getLogoBase64();
         
         particlesJS("particles-js", {
@@ -1032,6 +1056,10 @@
         const generateLinkBtnAdmin = document.getElementById('generate-link-btn');
         if (generateLinkBtnAdmin) {
             generateLinkBtnAdmin.addEventListener('click', () => {
+                if (!db) {
+                    alert("La base de datos no está conectada. Revisa tu configuración de Firebase.");
+                    return;
+                }
                 const name = currentUserData.name;
                 const birthdate = currentUserData.birthdate.toISOString().split('T')[0];
                 const duration = parseInt(document.getElementById('admin-duration').value);
@@ -1059,15 +1087,17 @@
                 document.getElementById('generated-link-container').classList.remove('hidden');
                 document.getElementById('generated-link').value = finalURL;
 
-                // Guardar en localStorage
-                const clients = JSON.parse(localStorage.getItem('sendero11_clients')) || [];
-                clients.push({
+                // Guardar en Firestore
+                db.collection("clients").add({
                     name: name,
                     duration: duration === 99 ? 'Permanente' : `${duration} mes(es)`,
-                    date: new Date().toLocaleDateString('es-ES')
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    displayAnalytics();
+                }).catch(err => {
+                    console.error("Error al guardar en Firestore: ", err);
+                    alert("Hubo un error al guardar el registro del cliente.");
                 });
-                localStorage.setItem('sendero11_clients', JSON.stringify(clients));
-                displayAnalytics();
             });
         }
         
@@ -1083,42 +1113,44 @@
         }
 
         function displayAnalytics() {
+            if (!db) return;
             const container = document.getElementById('analytics-table-container');
-            const clients = JSON.parse(localStorage.getItem('sendero11_clients')) || [];
-            if (clients.length === 0) {
-                container.innerHTML = '<p class="text-gray-400">Aún no has generado ningún enlace.</p>';
-                return;
-            }
-            let tableHTML = `
-                <table class="w-full text-sm text-left text-gray-300">
-                    <thead class="text-xs text-cyan-300 uppercase">
-                        <tr>
-                            <th scope="col" class="px-6 py-3">Cliente</th>
-                            <th scope="col" class="px-6 py-3">Paquete</th>
-                            <th scope="col" class="px-6 py-3">Fecha de Creación</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-            clients.forEach(client => {
-                tableHTML += `
-                    <tr class="border-b border-gray-700">
-                        <td class="px-6 py-4">${client.name}</td>
-                        <td class="px-6 py-4">${client.duration}</td>
-                        <td class="px-6 py-4">${client.date}</td>
-                    </tr>`;
+            db.collection("clients").orderBy("createdAt", "desc").get().then(querySnapshot => {
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p class="text-gray-400">Aún no has generado ningún enlace.</p>';
+                    return;
+                }
+                let tableHTML = `
+                    <table class="w-full text-sm text-left text-gray-300">
+                        <thead class="text-xs text-cyan-300 uppercase">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Cliente</th>
+                                <th scope="col" class="px-6 py-3">Paquete</th>
+                                <th scope="col" class="px-6 py-3">Fecha de Creación</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                querySnapshot.forEach(doc => {
+                    const client = doc.data();
+                    const date = client.createdAt ? client.createdAt.toDate().toLocaleDateString('es-ES') : 'N/A';
+                    tableHTML += `
+                        <tr class="border-b border-gray-700">
+                            <td class="px-6 py-4">${client.name}</td>
+                            <td class="px-6 py-4">${client.duration}</td>
+                            <td class="px-6 py-4">${date}</td>
+                        </tr>`;
+                });
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+            }).catch(err => {
+                console.error("Error al leer de Firestore: ", err);
+                container.innerHTML = '<p class="text-red-400">No se pudo cargar el registro. Revisa la conexión con la base de datos.</p>';
             });
-            tableHTML += '</tbody></table>';
-            container.innerHTML = tableHTML;
         }
 
         const clearAnalyticsBtn = document.getElementById('clear-analytics-btn');
         if (clearAnalyticsBtn) {
-            clearAnalyticsBtn.addEventListener('click', () => {
-                if (confirm('¿Estás seguro de que quieres borrar todo el registro de clientes? Esta acción no se puede deshacer.')) {
-                    localStorage.removeItem('sendero11_clients');
-                    displayAnalytics();
-                }
-            });
+            clearAnalyticsBtn.style.display = 'none'; // Deshabilitado por seguridad
         }
     });
     </script>
