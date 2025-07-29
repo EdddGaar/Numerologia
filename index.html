@@ -146,10 +146,12 @@
         <section id="results" class="hidden opacity-0 transition-opacity duration-1000 space-y-12">
             <div class="pt-8">
                  <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-12 text-white">Tu Códice Personal, <span id="user-name-title" class="text-cyan-400"></span></h2>
-                 <div id="codice-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center" data-step="3" data-intro="Este es tu Códice Personal. Aquí encontrarás tus números más importantes. Haz clic en cada tarjeta para voltearla y descubrir su significado completo.">
+                 <div id="codice-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-center" data-step="3" data-intro="Este es tu Códice Personal. Aquí encontrarás tus números más importantes. Haz clic en cada tarjeta para voltearla y descubrir su significado completo.">
                     <div id="camino-vida-card" class="glassmorphism rounded-2xl h-56"></div>
                     <div id="alma-card" class="glassmorphism rounded-2xl h-56"></div>
                     <div id="personalidad-card" class="glassmorphism rounded-2xl h-56"></div>
+                    <div id="regalo-card" class="glassmorphism rounded-2xl h-56"></div>
+                    <div id="karma-card" class="glassmorphism rounded-2xl h-56"></div>
                     <div id="ano-personal-card" class="glassmorphism rounded-2xl h-56"></div>
                  </div>
             </div>
@@ -170,7 +172,7 @@
 
 
             <!-- Sección del Calendario -->
-            <div data-step="5" data-intro="Finalmente, este es tu Calendario Cósmico. Cada día tiene su propio número y energía. Haz clic en un día para ver sus detalles, consejos, afirmaciones y el color recomendado para vestir. ¡Disfruta tu viaje!">
+            <div data-step="5" data-intro="Finalmente, este es tu Calendario Cósmico. Cada día tiene su propio número y energía, además de eventos cósmicos importantes. Haz clic en un día para ver todos sus detalles. ¡Disfruta tu viaje!">
                 <h2 id="calendar-title" class="main-title text-3xl sm:text-4xl font-bold text-center mb-4 text-white"></h2>
                 <p id="calendar-subtitle" class="text-center text-gray-400 mb-8"></p>
                 <div class="glassmorphism p-4 sm:p-6 rounded-2xl">
@@ -226,6 +228,22 @@
             }
             return reducirNumero(sum);
         }
+
+        function calculateKarmaNumbers(name) {
+            const presentNumbers = new Set();
+            for (let char of name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")) {
+                if (letterValues[char]) {
+                    presentNumbers.add(letterValues[char]);
+                }
+            }
+            const karma = [];
+            for (let i = 1; i <= 9; i++) {
+                if (!presentNumbers.has(i)) {
+                    karma.push(i);
+                }
+            }
+            return karma.length > 0 ? karma : ["Ninguno"];
+        }
         
         const infoNumeros = {
             caminoVida: {
@@ -267,17 +285,46 @@
                 11: "Proyectas una intensa energía espiritual e idealismo. La gente te percibe como alguien intuitivo, sensible y con una conexión especial con lo invisible.",
                 22: "Te ven como un maestro constructor, una persona práctica con grandes visiones. Proyectas la capacidad de lograr lo que para otros parece imposible."
             },
+            regalo: {
+                1: "Tu don es la originalidad y el liderazgo. Tienes la capacidad innata de iniciar proyectos y ser pionero. ¡Confía en tus ideas!",
+                2: "Tu regalo es la diplomacia y la sensibilidad. Eres un mediador natural que sabe cómo unir a las personas y crear armonía.",
+                3: "La comunicación es tu don. Tienes un talento natural para la expresión creativa, ya sea escribiendo, hablando o en las artes.",
+                4: "Tu regalo es la organización y la disciplina. Tienes la habilidad de construir sistemas sólidos y traer orden al caos.",
+                5: "La versatilidad es tu don. Te adaptas fácilmente al cambio y tienes un talento para la comunicación y la venta de ideas.",
+                6: "Tu regalo es la capacidad de nutrir y sanar. Tienes un don para crear belleza, armonía y cuidar de los demás.",
+                7: "La sabiduría interior es tu regalo. Eres un pensador profundo con una gran intuición y la capacidad de ver más allá de lo superficial.",
+                8: "Tu don es el poder de la manifestación. Tienes un talento natural para los negocios, las finanzas y el liderazgo ejecutivo.",
+                9: "La compasión es tu regalo. Tienes una habilidad innata para entender a los demás y un gran corazón para el servicio humanitario."
+            },
+            karma: {
+                1: "Debes aprender a ser más independiente y a desarrollar la confianza en ti mismo, sin depender de la aprobación de los demás.",
+                2: "Tu lección es aprender a cooperar y a ser diplomático. Necesitas desarrollar la paciencia y la sensibilidad hacia los sentimientos ajenos.",
+                3: "La lección es aprender a expresar tus emociones de forma positiva y a no tomar la vida tan en serio. La alegría y la creatividad son tu tarea.",
+                4: "Necesitas aprender el valor del trabajo duro y la disciplina. La lección es ser más organizado, práctico y construir bases sólidas.",
+                5: "Tu lección es aprender a manejar la libertad de forma constructiva, evitando los excesos y el miedo al compromiso.",
+                6: "Debes aprender a aceptar la responsabilidad en el hogar y en tus relaciones, equilibrando el dar y el recibir.",
+                7: "Tu karma te pide que desarrolles la fe y la confianza en lo invisible. La lección es conectar con tu sabiduría interior y no ser excesivamente escéptico.",
+                8: "La lección es aprender a manejar el poder y el dinero con sabiduría y generosidad, evitando ser demasiado dominante o materialista.",
+                9: "Debes aprender a soltar, a perdonar y a servir a los demás sin esperar nada a cambio. La compasión universal es tu meta.",
+                "Ninguno": "¡Felicidades! No tienes lecciones kármicas pendientes por tu nombre. Esto te da una mayor libertad para enfocarte en tu misión de vida."
+            },
             conexiones: {
-                1: { natural: "1, 5, 7", compatible: "2, 3, 9", desafio: "4, 6, 8" }, 2: { natural: "2, 4, 8", compatible: "1, 3, 6, 9", desafio: "5, 7" },
-                3: { natural: "3, 6, 9", compatible: "1, 2, 5", desafio: "4, 7, 8" }, 4: { natural: "2, 4, 8", compatible: "3, 6, 7", desafio: "1, 5, 9" },
-                5: { natural: "1, 5, 7", compatible: "3, 9", desafio: "2, 4, 6", neutral: "8" }, 6: { natural: "3, 6, 9", compatible: "2, 4, 8", desafio: "1, 5, 7" },
-                7: { natural: "1, 5, 7", compatible: "4, 6", desafio: "2, 3, 8, 9" }, 8: { natural: "2, 4, 8", compatible: "5, 6", desafio: "1, 3, 7, 9" },
+                1: { natural: "1, 5, 7", compatible: "2, 3, 9", desafio: "4, 6, 8" },
+                2: { natural: "2, 4, 8", compatible: "1, 3, 6, 9", desafio: "5, 7" },
+                3: { natural: "3, 6, 9", compatible: "1, 2, 5", desafio: "4, 7, 8" },
+                4: { natural: "2, 4, 8", compatible: "3, 6, 7", desafio: "1, 5, 9" },
+                5: { natural: "1, 5, 7", compatible: "3, 9", desafio: "2, 4, 6", neutral: "8" },
+                6: { natural: "3, 6, 9", compatible: "2, 4, 8", desafio: "1, 5, 7" },
+                7: { natural: "1, 5, 7", compatible: "4, 6", desafio: "2, 3, 8, 9" },
+                8: { natural: "2, 4, 8", compatible: "5, 6", desafio: "1, 3, 7, 9" },
                 9: { natural: "3, 6, 9", compatible: "1, 2, 5", desafio: "4, 7, 8" },
+                11: { natural: "2, 4, 8", compatible: "1, 3, 6, 9", desafio: "5, 7" },
+                22: { natural: "2, 4, 8", compatible: "3, 6, 7", desafio: "1, 5, 9" }
             },
             añoPersonal: {
                 1: { color: "Rojo", joya: "Rubí", palabra: "COMIENZO", desc: "Es tiempo para sembrar. Nuevos proyectos, cambios y planes. Asume el control." },
                 2: { color: "Anaranjado", joya: "Piedra de Luna", palabra: "PACIENCIA", desc: "Momento de unión, diplomacia y calma. Fortalece relaciones y no fuerces las cosas." },
-                3: { color: "Amarillo", joya: "Topacio", palabra: "GOZO", desc: "Año para socializar, crear y comunicar. Diviértete, sonríe y expande tu círculo." },
+                3: { color: "Amarillo", joya: "Topacio", palabra: "GOZO", desc: "Año para socializar, crea y comunicar. Diviértete, sonríe y expande tu círculo." },
                 4: { color: "Verde", joya: "Esmeralda", palabra: "PRÁCTICO", desc: "Año de ardua labor y construcción. Organiza, ahorra y construye bases firmes." },
                 5: { color: "Azul", joya: "Turquesa", palabra: "CAMBIO", desc: "Espera lo inesperado. Año de libertad, viajes y aventura. Aléjate de la rutina." },
                 6: { color: "Añil", joya: "Perla", palabra: "RESPONSABILIDAD", desc: "Centrado en el amor, hogar y familia. Acepta obligaciones y embellece tu entorno." },
@@ -314,11 +361,16 @@
         };
 
         const astrologicalEvents = {
-            "2025-03-29": { icon: "💫", name: "Eclipse Solar", desc: "Un poderoso nuevo comienzo. Ideal para plantar intenciones audaces, pero evita tomar decisiones impulsivas. La energía es potente pero caótica." },
+            "2025-03-14": { icon: "💫", name: "Eclipse Lunar Total", desc: "Finales y revelaciones emocionales. Lo que estaba oculto sale a la luz. Es un momento de cierre y liberación." },
+            "2025-03-20": { icon: "⚖️", name: "Equinoccio de Primavera", desc: "El Año Nuevo Astrológico. Un día de equilibrio perfecto entre luz y oscuridad, ideal para iniciar proyectos con energía renovada." },
+            "2025-03-29": { icon: "💫", name: "Eclipse Solar Parcial", desc: "Un poderoso nuevo comienzo. Ideal para plantar intenciones audaces, pero evita tomar decisiones impulsivas. La energía es potente pero caótica." },
             "2025-04-01": { icon: "⏪", name: "Inicia Mercurio Retrógrado", desc: "Comunicación, tecnología y viajes se complican. Revisa, repara y reconsidera. No es momento de firmar contratos ni empezar proyectos nuevos." },
-            "2025-04-14": { icon: "💫", name: "Eclipse Lunar", desc: "Finales y revelaciones emocionales. Lo que estaba oculto sale a la luz. Es un momento de cierre y liberación emocional." },
             "2025-04-25": { icon: "⏩", name: "Termina Mercurio Retrógrado", desc: "La claridad regresa. Los planes pueden avanzar. Es buen momento para implementar lo que reconsideraste durante el retrógrado." },
-            "2025-09-21": { icon: "💫", name: "Eclipse Solar", desc: "Nuevas oportunidades en relaciones y asociaciones. Un buen momento para iniciar colaboraciones, pero con cautela y claridad." },
+            "2025-06-21": { icon: "☀️", name: "Solsticio de Verano", desc: "El día más largo del año. Un portal de máxima energía solar, perfecto para celebrar la vida, la abundancia y la autoexpresión." },
+            "2025-09-07": { icon: "💫", name: "Eclipse Lunar Total", desc: "Un clímax emocional importante. Prepárate para soltar lo que ya no te sirve y ver culminar situaciones de los últimos 6 meses." },
+            "2025-09-21": { icon: "💫", name: "Eclipse Solar Parcial", desc: "Nuevas oportunidades en relaciones y asociaciones. Un buen momento para iniciar colaboraciones, pero con cautela y claridad." },
+            "2025-09-22": { icon: "⚖️", name: "Equinoccio de Otoño", desc: "Un tiempo de balance y gratitud. La energía se enfoca en cosechar lo sembrado y prepararse para un ciclo de introspección." },
+            "2025-12-21": { icon: "❄️", name: "Solsticio de Invierno", desc: "La noche más larga del año. Un portal energético para la introspección, el descanso y el renacimiento de la luz interior." },
         };
 
         function getMoonPhase(date) {
@@ -350,18 +402,21 @@
             const diaNac = birthdate.getDate();
             const mesNac = birthdate.getMonth() + 1;
             const anoNac = birthdate.getFullYear();
+            const anoNacStr = String(anoNac);
             
             const numeroDiaNacimiento = reducirNumero(diaNac, false);
             const caminoVida = reducirNumero(diaNac + mesNac + reducirNumero(anoNac));
             const alma = calculateNameNumber(name, 'vowels');
             const personalidad = calculateNameNumber(name, 'consonants');
             const destino = reducirNumero(alma + personalidad);
+            const regalo = reducirNumero(parseInt(anoNacStr.slice(-2)[0]) + parseInt(anoNacStr.slice(-2)[1]));
+            const karma = calculateKarmaNumbers(name);
 
             const hoy = new Date();
             const anoPlanetario = (hoy.getFullYear() > birthdate.getFullYear() || (hoy.getMonth() > birthdate.getMonth() || (hoy.getMonth() === birthdate.getMonth() && hoy.getDate() >= birthdate.getDate()))) ? hoy.getFullYear() : hoy.getFullYear() - 1;
             const anoPersonal = reducirNumero(diaNac + mesNac + anoPlanetario);
 
-            currentUserData = { name, birthdate, diaNac, numeroDiaNacimiento, caminoVida, alma, personalidad, destino, anoPersonal };
+            currentUserData = { name, birthdate, diaNac, numeroDiaNacimiento, caminoVida, alma, personalidad, destino, regalo, karma, anoPersonal };
 
             document.getElementById('user-name-title').textContent = name.split(' ')[0];
             document.getElementById('calendar-title').textContent = `Calendario Cósmico para ${name}`;
@@ -376,14 +431,13 @@
                 resultsSection.style.opacity = 1;
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                // Iniciar tutorial si es la primera vez
                 if (!localStorage.getItem('sendero11_tutorial_visto')) {
                     const intro = introJs();
                     intro.setOptions({
                         steps: [
-                            { element: document.getElementById('codice-cards'), title: 'Tu Códice Personal', intro: 'Aquí encontrarás tus números más importantes. Haz clic en cada tarjeta para voltearla y descubrir su significado completo.' },
-                            { element: document.getElementById('sinergia-section'), title: 'Sinergia Cósmica', intro: 'En esta sección, puedes analizar tu compatibilidad numerológica con cualquier persona: pareja, socios, amigos o familia.' },
-                            { element: document.getElementById('calendar-grid'), title: 'Calendario Cósmico', intro: 'Finalmente, este es tu calendario. Cada día tiene su propio número y energía. Haz clic en un día para ver sus detalles, consejos, afirmaciones y el color recomendado para vestir. ¡Disfruta tu viaje!' }
+                            { element: '#codice-cards', title: 'Tu Códice Personal', intro: 'Aquí encontrarás tus números más importantes. Haz clic en cada tarjeta para voltearla y descubrir su significado completo.' },
+                            { element: '#sinergia-section', title: 'Sinergia Cósmica', intro: 'En esta sección, puedes analizar tu compatibilidad numerológica con cualquier persona: pareja, socios, amigos o familia.' },
+                            { element: '#calendar-grid', title: 'Calendario Cósmico', intro: 'Finalmente, este es tu calendario. Cada día tiene su propio número y energía, además de eventos cósmicos importantes. Haz clic en un día para ver todos sus detalles. ¡Disfruta tu viaje!' }
                         ],
                         nextLabel: 'Siguiente >',
                         prevLabel: '< Anterior',
@@ -402,7 +456,7 @@
         });
         
         document.getElementById('sinergia-form').addEventListener('submit', (e) => {
-            e.preventDefault();
+             e.preventDefault();
             const otherName = document.getElementById('other-name').value;
             const otherBirthdateValue = document.getElementById('other-birthdate').value;
             if(!otherName || !otherBirthdateValue) {
@@ -447,7 +501,7 @@
         });
 
         function displayResults() {
-            const { caminoVida, alma, personalidad, destino, anoPersonal } = currentUserData;
+            const { caminoVida, alma, personalidad, destino, regalo, karma, anoPersonal } = currentUserData;
             
             const conexiones = infoNumeros.conexiones[caminoVida];
             document.getElementById('camino-vida-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Camino de Vida</h3><p class="text-7xl font-bold text-white">${caminoVida}</p><p class="text-xs text-gray-400">Tu misión y lecciones.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Significado del ${caminoVida}</h3><p class="text-white text-xs leading-tight">${infoNumeros.caminoVida[caminoVida]}</p><hr class="my-2 border-white/20 w-1/2"><p class="text-xs text-white leading-tight"><strong class="text-green-400">Compatible con:</strong> ${conexiones.compatible}</p></div></div></div>`;
@@ -455,6 +509,11 @@
             document.getElementById('alma-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Alma</h3><p class="text-7xl font-bold text-white">${alma}</p><p class="text-xs text-gray-400">Tus deseos internos.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Tu Deseo Interno (${alma})</h3><p class="text-white text-sm leading-tight">${infoNumeros.alma[alma]}</p></div></div></div>`;
             
             document.getElementById('personalidad-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Personalidad</h3><p class="text-7xl font-bold text-white">${personalidad}</p><p class="text-xs text-gray-400">Cómo te ven los demás.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Tu Máscara Social (${personalidad})</h3><p class="text-white text-sm leading-tight">${infoNumeros.personalidad[personalidad]}</p><h3 class="font-bold text-base text-cyan-300 mt-2">Destino: ${destino}</h3></div></div></div>`;
+            
+            document.getElementById('regalo-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Regalo Divino</h3><p class="text-7xl font-bold text-white">${regalo}</p><p class="text-xs text-gray-400">Tu don natural.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Tu Don Innato (${regalo})</h3><p class="text-white text-sm leading-tight">${infoNumeros.regalo[regalo]}</p></div></div></div>`;
+
+            const karmaText = karma[0] === "Ninguno" ? infoNumeros.karma["Ninguno"] : karma.map(k => `<strong>${k}:</strong> ${infoNumeros.karma[k]}`).join('<br><br>');
+            document.getElementById('karma-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Karma</h3><p class="text-5xl font-bold text-white">${karma.join(', ')}</p><p class="text-xs text-gray-400">Lecciones a aprender.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Tus Lecciones Kármicas</h3><p class="text-white text-xs text-left leading-tight">${karmaText}</p></div></div></div>`;
             
             const anoInfo = infoNumeros.añoPersonal[anoPersonal];
             document.getElementById('ano-personal-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Año Personal</h3><p class="text-7xl font-bold text-white">${anoPersonal}</p><p class="text-xs text-gray-400">Tu energía para este año.</p></div><div class="flip-card-back"><h3 class="font-bold text-lg mb-2" style="color:${anoInfo.color.toLowerCase()}">${anoInfo.palabra} (${anoPersonal})</h3><div class="space-y-2"><p class="text-white text-sm"><strong>Joya:</strong> ${anoInfo.joya}</p><p class="text-white text-xs leading-tight">${anoInfo.desc}</p></div></div></div></div>`;
@@ -543,3 +602,4 @@
     </script>
 </body>
 </html>
+
