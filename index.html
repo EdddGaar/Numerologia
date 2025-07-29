@@ -8,8 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Intro.js CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -43,52 +41,20 @@
             box-shadow: 0 0 15px rgba(0, 191, 255, 0.8), 0 0 25px rgba(0, 191, 255, 0.5);
             transform: translateY(-2px);
         }
-        .calendar-day {
+        .info-card {
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .flip-card {
-            perspective: 1000px;
             cursor: pointer;
         }
-        .flip-card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
+        .info-card:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.1);
         }
-        .flip-card.is-flipped .flip-card-inner {
-            transform: rotateY(180deg);
+        .modal-enter {
+            animation: fadeIn 0.3s ease-out;
         }
-        .flip-card-front, .flip-card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem;
-        }
-        .flip-card-back {
-            transform: rotateY(180deg);
-            justify-content: center; 
-        }
-        /* Estilos para Intro.js */
-        .introjs-tooltip {
-            background-color: #1a1a2e;
-            color: #e0e0e0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .introjs-button {
-            background-color: #00bfff;
-            color: white;
-            text-shadow: none;
-            border-radius: 5px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
@@ -120,12 +86,12 @@
             <div class="pt-8">
                  <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-12 text-white">Tu Códice Personal, <span id="user-name-title" class="text-cyan-400"></span></h2>
                  <div id="codice-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-center">
-                    <div id="camino-vida-card" class="glassmorphism rounded-2xl h-56"></div>
-                    <div id="alma-card" class="glassmorphism rounded-2xl h-56"></div>
-                    <div id="personalidad-card" class="glassmorphism rounded-2xl h-56"></div>
-                    <div id="regalo-card" class="glassmorphism rounded-2xl h-56"></div>
-                    <div id="karma-card" class="glassmorphism rounded-2xl h-56"></div>
-                    <div id="ano-personal-card" class="glassmorphism rounded-2xl h-56"></div>
+                    <div id="camino-vida-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-center items-center p-4"></div>
+                    <div id="alma-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-center items-center p-4"></div>
+                    <div id="personalidad-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-center items-center p-4"></div>
+                    <div id="regalo-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-center items-center p-4"></div>
+                    <div id="karma-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-center items-center p-4"></div>
+                    <div id="ano-personal-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-center items-center p-4"></div>
                  </div>
             </div>
             
@@ -160,15 +126,13 @@
         </section>
     </main>
     
-    <!-- MODAL PARA DETALLES DEL DÍA -->
-    <div id="day-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 hidden">
+    <!-- MODAL GENERAL -->
+    <div id="general-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 hidden">
         <div id="modal-content" class="glassmorphism p-6 rounded-2xl max-w-md w-full text-center modal-enter"></div>
     </div>
 
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <!-- Intro.js JS -->
-    <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
     <script>
         particlesJS("particles-js", {
             "particles": { "number": { "value": 40, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#ffffff" }, "shape": { "type": "circle" }, "opacity": { "value": 0.5, "random": false }, "size": { "value": 3, "random": true }, "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.4, "width": 1 }, "move": { "enable": true, "speed": 2, "direction": "none", "out_mode": "out" } },
@@ -316,7 +280,7 @@
                  6: { color: "Añil", hex: "#4338ca", grad: "from-indigo-600 to-blue-800", consejo: "Llama a un ser querido o dedica tiempo a embellecer tu hogar. El amor y el deber llaman.", afirmacion: "Asumo mis responsabilidades con amor y dedicación.", ropa: { color: "Añil", frase: "fortalecer los lazos afectivos y la armonía en el hogar." } },
                  7: { color: "Violeta", hex: "#9333ea", grad: "from-purple-500 to-fuchsia-500", consejo: "Evita las multitudes. Busca un momento de soledad para leer, meditar o simplemente analizar tus pensamientos.", afirmacion: "Encuentro sabiduría y paz en mi mundo interior.", ropa: { color: "Morado", frase: "conectar con tu intuición y tu lado espiritual." } },
                  8: { color: "Rosa", hex: "#ec4899", grad: "from-pink-400 to-rose-400", consejo: "Es un día de poder. Ideal para negociar un aumento, cerrar un trato o presentar un presupuesto. ¡Piensa en grande!", afirmacion: "Soy un imán para el éxito, la abundancia y el poder material.", ropa: { color: "Beige, Rosa o Café", frase: "alinearte con la energía de la abundancia y el éxito." } },
-                 9: { color: "Pastel", hex: "#c4b5fd", grad: "from-indigo-200 to-purple-200", consejo: "Suelta lo que ya no te sirve. Termina ese proyecto pendiente, dona ropa que no usas o perdona una vieja ofensa.", afirmacion: "Libero el pasado con gratitud y me abro a la sabiduría universal.", ropa: { color: "Tonos Pastel", frase: "fomentar la compasión y la generosidad." } },
+                 9: { color: "Pastel", hex: "#c4b5fd", grad: "from-indigo-200 to-purple-200", consejo: "Suelta lo que ya no sirve. Termina ese proyecto pendiente, dona ropa que no usas o perdona una vieja ofensa.", afirmacion: "Libero el pasado con gratitud y me abro a la sabiduría universal.", ropa: { color: "Tonos Pastel", frase: "fomentar la compasión y la generosidad." } },
                  11: { color: "Blanco/Gris", hex: "#d1d5db", grad: "from-gray-200 to-slate-200", consejo: "Presta atención a tus corazonadas y sueños. Hoy tu intuición está en su punto más alto.", afirmacion: "Mi intuición es mi guía más poderosa.", ropa: { color: "Blanco, Negro o Gris", frase: "amplificar tu intuición y tu conexión espiritual." } },
                  22: { color: "Coral", hex: "#fb923c", grad: "from-red-300 to-orange-300", consejo: "Tus acciones de hoy pueden tener un gran impacto. Piensa en cómo puedes beneficiar a tu comunidad.", afirmacion: "Materializo grandes sueños para el bien de todos.", ropa: { color: "Coral o Castaño", frase: "materializar tus ideas y construir proyectos sólidos." } }
             },
@@ -349,43 +313,296 @@
         const form = document.getElementById('numerology-form');
         const portalSection = document.getElementById('portal');
         const resultsSection = document.getElementById('results');
-        const dayModal = document.getElementById('day-modal');
+        const generalModal = document.getElementById('general-modal');
         const modalContent = document.getElementById('modal-content');
 
         let currentUserData = {};
         let currentDate = new Date();
 
-        function runCalculation(name, birthdateStr) { /* ...código sin cambios... */ }
-        window.onload = () => { /* ...código sin cambios... */ };
-        form.addEventListener('submit', (e) => { /* ...código sin cambios... */ });
-        document.getElementById('sinergia-form').addEventListener('submit', (e) => { /* ...código sin cambios... */ });
+        function runCalculation(name, birthdateStr) {
+            const birthdate = new Date(birthdateStr + 'T00:00:00');
+            const diaNac = birthdate.getDate();
+            const mesNac = birthdate.getMonth() + 1;
+            const anoNac = birthdate.getFullYear();
+            const anoNacStr = String(anoNac);
+            
+            const numeroDiaNacimiento = reducirNumero(diaNac, false);
+            const caminoVida = reducirNumero(diaNac + mesNac + reducirNumero(anoNac));
+            const alma = calculateNameNumber(name, 'vowels');
+            const personalidad = calculateNameNumber(name, 'consonants');
+            const destino = reducirNumero(alma + personalidad);
+            const regalo = reducirNumero(parseInt(anoNacStr.slice(-2)[0]) + parseInt(anoNacStr.slice(-2)[1]));
+            const karma = calculateKarmaNumbers(name);
+
+            const hoy = new Date();
+            const anoPlanetario = (hoy.getFullYear() > birthdate.getFullYear() || (hoy.getMonth() > birthdate.getMonth() || (hoy.getMonth() === birthdate.getMonth() && hoy.getDate() >= birthdate.getDate()))) ? hoy.getFullYear() : hoy.getFullYear() - 1;
+            const anoPersonal = reducirNumero(diaNac + mesNac + anoPlanetario);
+
+            currentUserData = { name, birthdate, diaNac, numeroDiaNacimiento, caminoVida, alma, personalidad, destino, regalo, karma, anoPersonal };
+
+            document.getElementById('user-name-title').textContent = name.split(' ')[0];
+            
+            portalSection.style.opacity = 0;
+            setTimeout(() => {
+                portalSection.classList.add('hidden');
+                resultsSection.classList.remove('hidden');
+                displayResults();
+                document.getElementById('calendar-title').textContent = `Calendario Cósmico para ${name}`;
+                document.getElementById('calendar-subtitle').textContent = `Nacimiento: ${birthdate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+                buildCalendar(currentDate);
+                resultsSection.style.opacity = 1;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
+        }
+
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const data = params.get('data');
+
+            if (data) {
+                try {
+                    const decodedData = JSON.parse(atob(data));
+                    runCalculation(decodedData.name, decodedData.birthdate);
+                } catch (e) {
+                    console.error("Error al decodificar los datos del link:", e);
+                    portalSection.classList.remove('hidden');
+                }
+            } else {
+                portalSection.classList.remove('hidden');
+            }
+        };
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const birthdateStr = document.getElementById('birthdate').value;
+            runCalculation(name, birthdateStr);
+        });
         
+        document.getElementById('sinergia-form').addEventListener('submit', (e) => {
+             e.preventDefault();
+            const otherName = document.getElementById('other-name').value;
+            const otherBirthdateValue = document.getElementById('other-birthdate').value;
+            if(!otherName || !otherBirthdateValue) {
+                document.getElementById('sinergia-result').innerHTML = `<p class="text-red-400">Por favor, completa ambos campos.</p>`;
+                return;
+            }
+
+            const otherBirthdate = new Date(otherBirthdateValue + 'T00:00:00');
+            const otherCamino = reducirNumero(otherBirthdate.getDate() + (otherBirthdate.getMonth() + 1) + reducirNumero(otherBirthdate.getFullYear()));
+            const otherAlma = calculateNameNumber(otherName, 'vowels');
+            const otherPersonalidad = calculateNameNumber(otherName, 'consonants');
+            
+            const myCamino = currentUserData.caminoVida;
+            const myAlma = currentUserData.alma;
+            const myPersonalidad = currentUserData.personalidad;
+
+            const myConexiones = infoNumeros.conexiones[myCamino];
+            let resultado = "Neutral";
+            let desc = "Una relación con potencial para crecer en cualquier dirección con esfuerzo.";
+            
+            if (myConexiones.natural.split(', ').includes(String(otherCamino))) {
+                resultado = "Natural 🍃";
+                desc = "Sus caminos fluyen juntos sin esfuerzo. Una conexión fácil y cómoda.";
+            } else if (myConexiones.compatible.split(', ').includes(String(otherCamino))) {
+                resultado = "Compatible ✨";
+                desc = "Sus senderos se entienden y apoyan mutuamente. Gran potencial para la armonía.";
+            } else if (myConexiones.desafio.split(', ').includes(String(otherCamino))) {
+                resultado = "Desafío 💥";
+                desc = "Una relación kármica con grandes lecciones que aprender. Requiere paciencia y comprensión.";
+            }
+            
+            let almaComp = myAlma === otherAlma ? "Sus almas desean lo mismo, una conexión profunda." : "Sus deseos internos son diferentes, lo que puede enriquecerlos o crear fricción.";
+            let personalidadComp = myPersonalidad === otherPersonalidad ? "Se proyectan al mundo de forma similar." : "La forma en que se muestran al mundo es distinta, deben aprender a entender sus estilos.";
+
+            document.getElementById('sinergia-result').innerHTML = `
+                <h4 class="font-bold text-xl text-purple-300">${resultado}</h4>
+                <p class="text-white text-sm">${desc}</p>
+                <div class="text-xs mt-2 text-gray-400">
+                    <p><strong>Almas:</strong> ${almaComp}</p>
+                    <p><strong>Personalidades:</strong> ${personalidadComp}</p>
+                </div>`;
+        });
+
         function displayResults() {
             const { caminoVida, alma, personalidad, destino, regalo, karma, anoPersonal } = currentUserData;
+
+            // Tarjeta Camino de Vida
+            const cvCard = document.getElementById('camino-vida-card');
+            cvCard.innerHTML = `<h3 class="font-bold text-xl text-cyan-300">Camino de Vida</h3><p class="text-7xl font-bold text-white">${caminoVida}</p><p class="text-xs text-gray-400">Tu misión y lecciones.</p>`;
+            cvCard.onclick = () => showCardDetails('caminoVida');
             
-            const conexiones = infoNumeros.conexiones[caminoVida];
-            document.getElementById('camino-vida-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Camino de Vida</h3><p class="text-7xl font-bold text-white">${caminoVida}</p><p class="text-xs text-gray-400">Tu misión y lecciones.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Significado del ${caminoVida}</h3><p class="text-white text-[11px] leading-tight">${infoNumeros.caminoVida[caminoVida]}</p><hr class="my-2 border-white/20 w-1/2"><p class="text-xs text-white leading-tight"><strong class="text-green-400">Compatible con:</strong> ${conexiones.compatible}</p></div></div></div>`;
-            document.getElementById('alma-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Alma</h3><p class="text-7xl font-bold text-white">${alma}</p><p class="text-xs text-gray-400">Tus deseos internos.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Tu Deseo Interno (${alma})</h3><p class="text-white text-sm leading-tight">${infoNumeros.alma[alma]}</p></div></div></div>`;
-            document.getElementById('personalidad-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Personalidad</h3><p class="text-7xl font-bold text-white">${personalidad}</p><p class="text-xs text-gray-400">Cómo te ven los demás.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Tu Máscara Social (${personalidad})</h3><p class="text-white text-sm leading-tight">${infoNumeros.personalidad[personalidad]}</p><h3 class="font-bold text-base text-cyan-300 mt-2">Destino: ${destino}</h3></div></div></div>`;
-            document.getElementById('regalo-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Regalo Divino</h3><p class="text-7xl font-bold text-white">${regalo}</p><p class="text-xs text-gray-400">Tu don natural.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Tu Don Innato (${regalo})</h3><p class="text-white text-sm leading-tight">${infoNumeros.regalo[regalo]}</p></div></div></div>`;
-            const karmaText = karma[0] === "Ninguno" ? infoNumeros.karma["Ninguno"] : karma.map(k => `<strong>${k}:</strong> ${infoNumeros.karma[k]}`).join('<br><br>');
-            document.getElementById('karma-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Karma</h3><p class="text-5xl font-bold text-white">${karma.join(', ')}</p><p class="text-xs text-gray-400">Lecciones a aprender.</p></div><div class="flip-card-back"><h3 class="font-bold text-base text-cyan-300 mb-2">Tus Lecciones Kármicas</h3><p class="text-white text-xs text-left leading-tight">${karmaText}</p></div></div></div>`;
-            const anoInfo = infoNumeros.añoPersonal[anoPersonal];
-            document.getElementById('ano-personal-card').innerHTML = `<div class="flip-card" onclick="this.classList.toggle('is-flipped')"><div class="flip-card-inner"><div class="flip-card-front"><h3 class="font-bold text-xl text-cyan-300">Año Personal</h3><p class="text-7xl font-bold text-white">${anoPersonal}</p><p class="text-xs text-gray-400">Tu energía para este año.</p></div><div class="flip-card-back"><h3 class="font-bold text-lg mb-2" style="color:${anoInfo.color.toLowerCase()}">${anoInfo.palabra} (${anoPersonal})</h3><div class="space-y-2"><p class="text-white text-sm"><strong>Joya:</strong> ${anoInfo.joya}</p><p class="text-white text-xs leading-tight">${anoInfo.desc}</p></div></div></div></div>`;
+            // Tarjeta Alma
+            const almaCard = document.getElementById('alma-card');
+            almaCard.innerHTML = `<h3 class="font-bold text-xl text-cyan-300">Alma</h3><p class="text-7xl font-bold text-white">${alma}</p><p class="text-xs text-gray-400">Tus deseos internos.</p>`;
+            almaCard.onclick = () => showCardDetails('alma');
+
+            // Tarjeta Personalidad
+            const pCard = document.getElementById('personalidad-card');
+            pCard.innerHTML = `<h3 class="font-bold text-xl text-cyan-300">Personalidad</h3><p class="text-7xl font-bold text-white">${personalidad}</p><p class="text-xs text-gray-400">Cómo te ven los demás.</p>`;
+            pCard.onclick = () => showCardDetails('personalidad');
+
+            // Tarjeta Regalo
+            const rCard = document.getElementById('regalo-card');
+            rCard.innerHTML = `<h3 class="font-bold text-xl text-cyan-300">Regalo Divino</h3><p class="text-7xl font-bold text-white">${regalo}</p><p class="text-xs text-gray-400">Tu don natural.</p>`;
+            rCard.onclick = () => showCardDetails('regalo');
+            
+            // Tarjeta Karma
+            const kCard = document.getElementById('karma-card');
+            kCard.innerHTML = `<h3 class="font-bold text-xl text-cyan-300">Karma</h3><p class="text-5xl font-bold text-white">${karma.join(', ')}</p><p class="text-xs text-gray-400">Lecciones a aprender.</p>`;
+            kCard.onclick = () => showCardDetails('karma');
+
+            // Tarjeta Año Personal
+            const apCard = document.getElementById('ano-personal-card');
+            apCard.innerHTML = `<h3 class="font-bold text-xl text-cyan-300">Año Personal</h3><p class="text-7xl font-bold text-white">${anoPersonal}</p><p class="text-xs text-gray-400">Tu energía para este año.</p>`;
+            apCard.onclick = () => showCardDetails('anoPersonal');
+        }
+
+        function showCardDetails(type) {
+            const { caminoVida, alma, personalidad, destino, regalo, karma, anoPersonal } = currentUserData;
+            let title = '';
+            let content = '';
+
+            switch (type) {
+                case 'caminoVida':
+                    const conexiones = infoNumeros.conexiones[caminoVida];
+                    title = `Camino de Vida ${caminoVida}`;
+                    content = `<p class="text-sm mb-4">${infoNumeros.caminoVida[caminoVida]}</p>
+                               <hr class="my-3 border-white/20">
+                               <h4 class="font-bold text-cyan-300 mb-2">Conexiones</h4>
+                               <div class="text-xs text-left space-y-1">
+                                <p><strong class="text-green-400">Natural:</strong> ${conexiones.natural}</p>
+                                <p><strong class="text-blue-400">Compatible:</strong> ${conexiones.compatible}</p>
+                                <p><strong class="text-red-400">Desafío:</strong> ${conexiones.desafio}</p>
+                               </div>`;
+                    break;
+                case 'alma':
+                    title = `Número de Alma ${alma}`;
+                    content = `<p class="text-sm">${infoNumeros.alma[alma]}</p>`;
+                    break;
+                case 'personalidad':
+                    title = `Número de Personalidad ${personalidad}`;
+                    content = `<p class="text-sm mb-4">${infoNumeros.personalidad[personalidad]}</p>
+                               <hr class="my-3 border-white/20">
+                               <p class="font-bold text-cyan-300">Destino: ${destino}</p>`;
+                    break;
+                case 'regalo':
+                     title = `Regalo Divino ${regalo}`;
+                    content = `<p class="text-sm">${infoNumeros.regalo[regalo]}</p>`;
+                    break;
+                case 'karma':
+                    const karmaText = karma[0] === "Ninguno" ? `<p class="text-sm">${infoNumeros.karma["Ninguno"]}</p>` : karma.map(k => `<p class="text-sm"><strong class="text-cyan-300">${k}:</strong> ${infoNumeros.karma[k]}</p>`).join('');
+                    title = `Lecciones Kármicas`;
+                    content = `<div class="space-y-2">${karmaText}</div>`;
+                    break;
+                case 'anoPersonal':
+                    const anoInfo = infoNumeros.añoPersonal[anoPersonal];
+                    title = `Año Personal ${anoPersonal}`;
+                    content = `<h3 class="font-bold text-2xl mb-2" style="color:${anoInfo.color.toLowerCase()}">${anoInfo.palabra}</h3>
+                               <p class="text-sm"><strong>Joya:</strong> ${anoInfo.joya}</p>
+                               <p class="text-sm mt-4">${anoInfo.desc}</p>`;
+                    break;
+            }
+
+            modalContent.innerHTML = `<h3 class="main-title text-3xl font-bold mb-4">${title}</h3>
+                                      <div class="text-gray-300">${content}</div>
+                                      <button id="close-modal" class="mt-6 w-full p-2 bg-cyan-500 text-white font-bold rounded-lg glow-button">Cerrar</button>`;
+            generalModal.classList.remove('hidden');
         }
         
         function buildCalendar(date) {
+            const { anoPersonal, numeroDiaNacimiento } = currentUserData;
+            const month = date.getMonth();
+            const year = date.getFullYear();
+
+            document.getElementById('month-year').textContent = date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase());
             const calendarGrid = document.getElementById('calendar-grid');
-            if (!currentUserData.name || !calendarGrid) return; // CORRECCIÓN
+            calendarGrid.innerHTML = '';
+            const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            diasSemana.forEach(dia => { calendarGrid.innerHTML += `<div class="text-center font-bold text-cyan-300 text-xs sm:text-base">${dia}</div>`; });
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let i = 0; i < firstDayOfMonth; i++) { calendarGrid.innerHTML += `<div></div>`; }
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const currentDayDate = new Date(year, month, i);
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const astroEvent = astrologicalEvents[dateString];
+
+                const diaDeLaSemana = diasSemana[currentDayDate.getDay()];
+                const periodosDiaNac = infoNumeros.periodos[numeroDiaNacimiento] || { favorables: [] };
+                const isFavorable = periodosDiaNac.favorables.includes(diaDeLaSemana);
+                
+                const mesPersonal = reducirNumero(anoPersonal + (month + 1));
+                const diaPersonal = reducirNumero(mesPersonal + i);
+                const diaInfo = infoNumeros.diaPersonal[diaPersonal];
+                let dayClasses = `calendar-day glassmorphism rounded-lg text-center cursor-pointer flex flex-col items-center justify-center aspect-square p-1`;
+                if (new Date().toDateString() === currentDayDate.toDateString()) dayClasses += ' day-pulse';
+                const moonPhase = getMoonPhase(currentDayDate);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = dayClasses;
+                dayElement.style.background = `linear-gradient(45deg, ${diaInfo.grad.split(' ')[0].replace('from-', 'var(--tw-gradient-from, #000)')}, ${diaInfo.grad.split(' ')[1].replace('to-', 'var(--tw-gradient-to, #000)')})`;
+                
+                dayElement.innerHTML = `<span class="text-lg sm:text-2xl font-bold" style="color: ${diaPersonal > 9 ? 'black' : 'white'}; text-shadow: 0 0 5px black;">${i}</span><span class="text-xs sm:text-sm font-bold" style="color: ${diaPersonal > 9 ? 'black' : 'white'}; text-shadow: 0 0 5px black;">${diaPersonal}</span><div class="flex text-xs mt-1 gap-1 items-center"><span>${moonPhase.icon}</span>${astroEvent ? `<span>${astroEvent.icon}</span>` : ''}${isFavorable ? '<span class="text-yellow-300">⭐</span>' : ''}</div>`;
+                dayElement.onclick = () => showDayDetails(currentDayDate, diaPersonal, diaInfo, moonPhase, astroEvent);
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        function showDayDetails(date, diaPersonal, diaInfo, moonPhase, astroEvent) {
+            let astroEventHtml = '';
+            if (astroEvent) {
+                astroEventHtml = `
+                <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-red-400 mb-1">${astroEvent.icon} Evento Astrológico: ${astroEvent.name}</h4>
+                    <p class="text-sm pl-6">${astroEvent.desc}</p>
+                </div>`;
+            }
+
+            modalContent.innerHTML = `
+                <p class="text-xl font-bold mb-2">${date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div class="mb-4">
+                    <p class="text-6xl font-bold" style="color:${diaInfo.hex}">${diaPersonal}</p>
+                    <p class="text-xl font-bold" style="color:${diaInfo.hex}">Día ${diaInfo.color}</p>
+                </div>
+                ${astroEventHtml}
+                <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-yellow-300 mb-1 flex items-center"><span class="w-4 h-4 rounded-full mr-2 border border-white/20" style="background-color:${diaInfo.hex};"></span>Vibración de Color</h4>
+                    <p class="text-sm pl-6">Viste de <strong>${diaInfo.ropa.color}</strong> para ${diaInfo.ropa.frase}</p>
+                </div>
+                <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-cyan-300 mb-1">💡 Consejo del Día</h4>
+                    <p class="text-sm pl-6">${diaInfo.consejo}</p>
+                </div>
+                 <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-purple-300 mb-1">✨ Afirmación del Día</h4>
+                    <p class="text-sm italic pl-6">"${diaInfo.afirmacion}"</p>
+                </div>
+                <div class="text-left space-y-2 text-xs mt-4">
+                    <p><strong>Fase Lunar:</strong> ${moonPhase.icon} ${moonPhase.name}</p>
+                </div>
+                <button id="close-modal" class="mt-6 w-full p-2 bg-cyan-500 text-white font-bold rounded-lg glow-button">Cerrar</button>`;
             
-            // ... resto del código de buildCalendar sin cambios
+            generalModal.classList.remove('hidden');
+        }
+
+        function getMoonPhase(date) {
+            const dayOfMonth = date.getDate();
+            if (dayOfMonth < 4) return {icon: "🌑", name: "Luna Nueva"};
+            if (dayOfMonth < 11) return {icon: "🌓", name: "Cuarto Creciente"};
+            if (dayOfMonth < 18) return {icon: "🌕", name: "Luna Llena"};
+            if (dayOfMonth < 26) return {icon: "🌗", name: "Cuarto Menguante"};
+            return {icon: "🌑", name: "Luna Nueva"};
         }
         
-        function showDayDetails(date, diaPersonal, diaInfo, moonPhase, astroEvent) { /* ...código sin cambios... */ }
-        
-        dayModal.addEventListener('click', (e) => { /* ...código sin cambios... */ });
-        document.getElementById('prev-month').addEventListener('click', () => { /* ...código sin cambios... */ });
-        document.getElementById('next-month').addEventListener('click', () => { /* ...código sin cambios... */ });
+        generalModal.addEventListener('click', (e) => { 
+            if (e.target.id === 'general-modal' || e.target.id === 'close-modal') {
+                generalModal.classList.add('hidden');
+            }
+        });
+        document.getElementById('prev-month').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); buildCalendar(currentDate); });
+        document.getElementById('next-month').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); buildCalendar(currentDate); });
 
     </script>
 </body>
