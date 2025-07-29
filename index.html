@@ -33,48 +33,10 @@
     <div id="particles-js"></div>
 
     <main class="container mx-auto p-4 md:p-8 relative z-10">
-
-        <!-- ============================================= -->
-        <!-- DASHBOARD DE ADMIN (Visible con ?mode=admin)  -->
-        <!-- ============================================= -->
-        <section id="admin-dashboard" class="hidden min-h-screen flex-col items-center justify-center text-center">
-            <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-32 h-32 mb-6">
-            <h1 class="main-title text-4xl font-bold text-white mb-4">Dashboard de Administrador</h1>
-            <p class="text-gray-400 mb-8">Genera un nuevo enlace de cliente.</p>
-            <div class="w-full max-w-lg space-y-4 glassmorphism p-6 rounded-2xl">
-                <div>
-                    <label for="admin-name" class="sr-only">Nombre completo del cliente</label>
-                    <input type="text" id="admin-name" placeholder="Nombre completo del cliente" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
-                </div>
-                <div>
-                    <label for="admin-birthdate" class="sr-only">Fecha de nacimiento del cliente</label>
-                    <input type="date" id="admin-birthdate" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
-                </div>
-                <div>
-                    <label for="admin-duration" class="sr-only">Duración del acceso</label>
-                    <select id="admin-duration" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition">
-                        <option value="1">1 Mes de Acceso</option>
-                        <option value="2">2 Meses de Acceso</option>
-                        <option value="6">6 Meses de Acceso</option>
-                        <option value="12">12 Meses (1 Año) de Acceso</option>
-                        <option value="99">Acceso Permanente</option>
-                    </select>
-                </div>
-                <button id="generate-link-btn" class="w-full p-3 bg-cyan-500 text-white font-bold rounded-lg text-lg glow-button">
-                    Generar Enlace
-                </button>
-                <div id="generated-link-container" class="hidden mt-4">
-                    <p class="text-gray-300 mb-2">Enlace generado para el cliente:</p>
-                    <input type="text" id="generated-link" class="w-full p-2 bg-black/20 border border-white/30 rounded-lg text-center text-cyan-300" readonly>
-                    <button id="copy-link-btn" class="mt-2 p-2 bg-purple-500 text-white font-bold rounded-lg text-sm">Copiar</button>
-                </div>
-            </div>
-        </section>
-
         <!-- ============================================= -->
         <!-- PORTAL DE ENTRADA (Público o Cliente)         -->
         <!-- ============================================= -->
-        <section id="portal" class="hidden flex min-h-screen flex-col items-center justify-center text-center transition-opacity duration-1000">
+        <section id="portal" class="flex min-h-screen flex-col items-center justify-center text-center transition-opacity duration-1000">
             <div id="portal-content" class="w-full">
                 <!-- El contenido se llenará desde JS: puede ser el form, un error o un mensaje de expirado -->
             </div>
@@ -96,6 +58,49 @@
                 </div>
             </div>
             
+            <!-- ============================================= -->
+            <!-- PANEL DE ADMINISTRADOR (NUEVO Y DINÁMICO)     -->
+            <!-- ============================================= -->
+            <div id="admin-panel" class="hidden space-y-12">
+                <div id="admin-link-generator">
+                    <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-8 text-white">Panel de Administrador</h2>
+                    <div class="glassmorphism p-6 rounded-2xl max-w-2xl mx-auto text-center">
+                        <p class="text-center mb-4">Genera el enlace para este cliente.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="admin-duration" class="sr-only">Duración del acceso</label>
+                                <select id="admin-duration" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition">
+                                    <option value="1">1 Mes de Acceso</option>
+                                    <option value="2">2 Meses de Acceso</option>
+                                    <option value="6">6 Meses de Acceso</option>
+                                    <option value="12">12 Meses (1 Año) de Acceso</option>
+                                    <option value="99">Acceso Permanente</option>
+                                </select>
+                            </div>
+                            <button id="generate-link-btn" class="w-full p-3 bg-cyan-500 text-white font-bold rounded-lg text-lg glow-button">
+                                Generar Enlace de Cliente
+                            </button>
+                            <div id="generated-link-container" class="hidden pt-4">
+                                <p class="text-gray-300 mb-2">Enlace generado:</p>
+                                <input type="text" id="generated-link" class="w-full p-2 bg-black/20 border border-white/30 rounded-lg text-center text-cyan-300" readonly>
+                                <button id="copy-link-btn" class="mt-2 p-2 bg-purple-500 text-white font-bold rounded-lg text-sm">Copiar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-analytics">
+                    <h2 class="main-title text-3xl sm:text-4xl font-bold text-center mb-8 text-white">Registro de Clientes</h2>
+                    <div class="glassmorphism p-6 rounded-2xl max-w-4xl mx-auto">
+                        <div id="analytics-table-container" class="overflow-x-auto">
+                           <!-- La tabla de registros se generará aquí -->
+                        </div>
+                        <button id="clear-analytics-btn" class="mt-4 p-2 bg-red-600 text-white font-bold rounded-lg text-sm">Limpiar Registro</button>
+                        <p class="text-xs text-gray-500 mt-2">Nota: El registro se guarda en este navegador. Si limpias la caché o usas otro dispositivo, se perderá.</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- SECCIÓN DE SINERGIA MEJORADA -->
             <div id="sinergia-section">
                 <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-8 text-white">Sinergia Cósmica</h2>
@@ -457,7 +462,7 @@
         const portalSection = document.getElementById('portal');
         const portalContent = document.getElementById('portal-content');
         const resultsSection = document.getElementById('results');
-        const adminDashboard = document.getElementById('admin-dashboard');
+        const adminPanel = document.getElementById('admin-panel');
         const generalModal = document.getElementById('general-modal');
         const modalContent = document.getElementById('modal-content');
 
@@ -465,13 +470,9 @@
         let currentDate = new Date();
         
         const params = new URLSearchParams(window.location.search);
-        const mode = params.get('mode');
         const data = params.get('data');
 
-        if (mode === 'admin') {
-            adminDashboard.classList.remove('hidden');
-            adminDashboard.classList.add('flex');
-        } else if (data) {
+        if (data) {
             try {
                 const decodedData = JSON.parse(atob(data));
                 const today = new Date();
@@ -484,17 +485,15 @@
                         <h2 class="main-title text-4xl text-red-400 mb-4">Acceso Expirado</h2>
                         <p class="text-lg text-gray-300">El enlace para tu reporte personalizado ha expirado.</p>
                         <p class="text-sm text-gray-500 mt-2">Por favor, contacta a Sendero 11 para renovar tu acceso.</p>`;
-                    portalSection.classList.remove('hidden');
                     portalSection.classList.add('flex');
                 } else {
-                    runCalculation(decodedData.name, decodedData.birthdate, decodedData.duration, decodedData.startDate);
+                    runCalculation(decodedData.name, decodedData.birthdate, decodedData.duration, decodedData.startDate, false); // false = no es admin
                 }
             } catch (e) {
                 portalContent.innerHTML = `
                     <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-48 h-48 mb-8 mx-auto">
                     <h2 class="main-title text-4xl text-red-400 mb-4">Enlace Inválido</h2>
                     <p class="text-lg text-gray-300">El enlace que has usado no es correcto o está dañado.</p>`;
-                portalSection.classList.remove('hidden');
                 portalSection.classList.add('flex');
             }
         } else {
@@ -514,7 +513,6 @@
                         Descifrar mi Código
                     </button>
                 </form>`;
-            portalSection.classList.remove('hidden');
             portalSection.classList.add('flex');
             
             const publicForm = document.getElementById('numerology-form');
@@ -524,63 +522,13 @@
                     const name = document.getElementById('name').value;
                     const birthdateStr = document.getElementById('birthdate').value;
                     if (name && birthdateStr) {
-                       runCalculation(name, birthdateStr, 99, new Date().toISOString().split('T')[0]);
+                       runCalculation(name, birthdateStr, 99, new Date().toISOString().split('T')[0], true); // true = es admin
                     }
                 });
             }
         }
-
-        const generateLinkBtn = document.getElementById('generate-link-btn');
-        if (generateLinkBtn) {
-            generateLinkBtn.addEventListener('click', () => {
-                const name = document.getElementById('admin-name').value;
-                const birthdate = document.getElementById('admin-birthdate').value;
-                const duration = parseInt(document.getElementById('admin-duration').value);
-
-                if (!name || !birthdate) {
-                    alert('Por favor, completa el nombre y la fecha de nacimiento.');
-                    return;
-                }
-
-                const today = new Date();
-                let expirationDate = new Date(today);
-
-                if (duration === 99) {
-                    expirationDate = new Date('9999-12-31');
-                } else {
-                    expirationDate.setMonth(today.getMonth() + duration);
-                }
-                
-                const dataToEncode = {
-                    name: name,
-                    birthdate: birthdate,
-                    validUntil: expirationDate.toISOString().split('T')[0],
-                    duration: duration,
-                    startDate: new Date().toISOString().split('T')[0]
-                };
-
-                const encodedData = btoa(JSON.stringify(dataToEncode));
-                const baseURL = window.location.origin + window.location.pathname;
-                const finalURL = `${baseURL}?data=${encodedData}`;
-
-                document.getElementById('generated-link-container').classList.remove('hidden');
-                const linkInput = document.getElementById('generated-link');
-                linkInput.value = finalURL;
-            });
-        }
         
-        const copyLinkBtn = document.getElementById('copy-link-btn');
-        if(copyLinkBtn) {
-            copyLinkBtn.addEventListener('click', () => {
-                const linkInput = document.getElementById('generated-link');
-                linkInput.select();
-                document.execCommand('copy');
-                copyLinkBtn.textContent = '¡Copiado!';
-                setTimeout(() => { copyLinkBtn.textContent = 'Copiar'; }, 2000);
-            });
-        }
-        
-        function runCalculation(name, birthdateStr, duration, startDate) {
+        function runCalculation(name, birthdateStr, duration, startDate, isAdminView) {
             const birthdate = new Date(birthdateStr + 'T00:00:00');
             const diaNac = birthdate.getDate();
             const mesNac = birthdate.getMonth() + 1;
@@ -614,6 +562,14 @@
                 document.getElementById('calendar-subtitle').textContent = `Nacimiento: ${birthdate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`;
                 buildCalendar(currentDate);
                 setupPdfButtons(duration);
+
+                if (isAdminView) {
+                    adminPanel.classList.remove('hidden');
+                    displayAnalytics();
+                } else {
+                    adminPanel.classList.add('hidden');
+                }
+
                 setTimeout(() => {
                     resultsSection.style.opacity = 1;
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -994,7 +950,6 @@
                 calendarDate.setMonth(calendarDate.getMonth() + i);
                 
                 const tempCalendarContainer = document.createElement('div');
-                // Clonamos el nodo para no afectar el original
                 const calendarNode = document.getElementById('calendar-section').cloneNode(true);
                 tempCalendarContainer.appendChild(calendarNode);
                 tempCalendarContainer.style.width = '800px';
@@ -1007,10 +962,10 @@
                 const tempMonthYear = tempCalendarContainer.querySelector('#month-year');
                 
                 const originalDate = new Date(currentDate);
-                buildCalendar(calendarDate); // Actualiza el calendario principal para obtener los datos correctos
-                tempGrid.innerHTML = document.getElementById('calendar-grid').innerHTML; // Copiamos el resultado
+                buildCalendar(calendarDate);
+                tempGrid.innerHTML = document.getElementById('calendar-grid').innerHTML;
                 tempMonthYear.innerHTML = `Calendario Numerológico para ${calendarDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`;
-                buildCalendar(originalDate); // Restauramos el calendario de la UI
+                buildCalendar(originalDate);
 
                 const canvas = await html2canvas(tempCalendarContainer, { backgroundColor: '#0a0a1a', scale: 2 });
                 document.body.removeChild(tempCalendarContainer);
@@ -1072,6 +1027,99 @@
                 buildCalendar(currentDate);
             }
         });
+
+        // --- Lógica de Analíticas de Admin ---
+        const generateLinkBtnAdmin = document.getElementById('generate-link-btn');
+        if (generateLinkBtnAdmin) {
+            generateLinkBtnAdmin.addEventListener('click', () => {
+                const name = currentUserData.name;
+                const birthdate = currentUserData.birthdate.toISOString().split('T')[0];
+                const duration = parseInt(document.getElementById('admin-duration').value);
+
+                const today = new Date();
+                let expirationDate = new Date(today);
+                if (duration === 99) {
+                    expirationDate = new Date('9999-12-31');
+                } else {
+                    expirationDate.setMonth(today.getMonth() + duration);
+                }
+                
+                const dataToEncode = {
+                    name,
+                    birthdate,
+                    validUntil: expirationDate.toISOString().split('T')[0],
+                    duration,
+                    startDate: new Date().toISOString().split('T')[0]
+                };
+
+                const encodedData = btoa(JSON.stringify(dataToEncode));
+                const baseURL = window.location.origin + window.location.pathname;
+                const finalURL = `${baseURL}?data=${encodedData}`;
+
+                document.getElementById('generated-link-container').classList.remove('hidden');
+                document.getElementById('generated-link').value = finalURL;
+
+                // Guardar en localStorage
+                const clients = JSON.parse(localStorage.getItem('sendero11_clients')) || [];
+                clients.push({
+                    name: name,
+                    duration: duration === 99 ? 'Permanente' : `${duration} mes(es)`,
+                    date: new Date().toLocaleDateString('es-ES')
+                });
+                localStorage.setItem('sendero11_clients', JSON.stringify(clients));
+                displayAnalytics();
+            });
+        }
+        
+        const copyLinkBtnAdmin = document.getElementById('copy-link-btn');
+        if(copyLinkBtnAdmin) {
+            copyLinkBtnAdmin.addEventListener('click', () => {
+                const linkInput = document.getElementById('generated-link');
+                linkInput.select();
+                document.execCommand('copy');
+                copyLinkBtnAdmin.textContent = '¡Copiado!';
+                setTimeout(() => { copyLinkBtnAdmin.textContent = 'Copiar'; }, 2000);
+            });
+        }
+
+        function displayAnalytics() {
+            const container = document.getElementById('analytics-table-container');
+            const clients = JSON.parse(localStorage.getItem('sendero11_clients')) || [];
+            if (clients.length === 0) {
+                container.innerHTML = '<p class="text-gray-400">Aún no has generado ningún enlace.</p>';
+                return;
+            }
+            let tableHTML = `
+                <table class="w-full text-sm text-left text-gray-300">
+                    <thead class="text-xs text-cyan-300 uppercase">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Cliente</th>
+                            <th scope="col" class="px-6 py-3">Paquete</th>
+                            <th scope="col" class="px-6 py-3">Fecha de Creación</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            clients.forEach(client => {
+                tableHTML += `
+                    <tr class="border-b border-gray-700">
+                        <td class="px-6 py-4">${client.name}</td>
+                        <td class="px-6 py-4">${client.duration}</td>
+                        <td class="px-6 py-4">${client.date}</td>
+                    </tr>`;
+            });
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+        }
+
+        const clearAnalyticsBtn = document.getElementById('clear-analytics-btn');
+        if (clearAnalyticsBtn) {
+            clearAnalyticsBtn.addEventListener('click', () => {
+                if (confirm('¿Estás seguro de que quieres borrar todo el registro de clientes? Esta acción no se puede deshacer.')) {
+                    localStorage.removeItem('sendero11_clients');
+                    displayAnalytics();
+                }
+            });
+        }
     });
     </script>
 </body>
