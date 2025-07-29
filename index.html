@@ -126,7 +126,7 @@
 
         <!-- PASO 1: EL PORTAL DE ENTRADA -->
         <section id="portal" class="min-h-screen flex flex-col items-center justify-center text-center transition-opacity duration-1000">
-            <h1 class="main-title text-5xl md:text-7xl font-bold text-white mb-4" data-step="1" data-intro="¡Bienvenido a Sendero 11! Aquí comienza tu viaje de autodescubrimiento.">Sendero 11</h1>
+            <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-48 h-48 mb-8" data-step="1" data-intro="¡Bienvenido a Sendero 11! Aquí comienza tu viaje de autodescubrimiento.">
             <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl">Descubre los secretos que los números tienen para ti. Ingresa tus datos para revelar tu sendero cósmico.</p>
             
             <form id="numerology-form" class="w-full max-w-lg space-y-4" data-step="2" data-intro="Ingresa tu nombre completo y fecha de nacimiento aquí para comenzar el cálculo.">
@@ -137,7 +137,7 @@
                     <input type="date" id="birthdate" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
                 </div>
                 <button type="submit" class="w-full p-3 bg-cyan-500 text-white font-bold rounded-lg text-lg glow-button">
-                    Revelar mi Destino
+                    Descifrar mi Código
                 </button>
             </form>
         </section>
@@ -419,15 +419,16 @@
             currentUserData = { name, birthdate, diaNac, numeroDiaNacimiento, caminoVida, alma, personalidad, destino, regalo, karma, anoPersonal };
 
             document.getElementById('user-name-title').textContent = name.split(' ')[0];
-            document.getElementById('calendar-title').textContent = `Calendario Cósmico para ${name}`;
-            document.getElementById('calendar-subtitle').textContent = `Nacimiento: ${birthdate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+            
             displayResults();
-            buildCalendar(currentDate);
-
+            
             portalSection.style.opacity = 0;
             setTimeout(() => {
                 portalSection.classList.add('hidden');
                 resultsSection.classList.remove('hidden');
+                document.getElementById('calendar-title').textContent = `Calendario Cósmico para ${name}`;
+                document.getElementById('calendar-subtitle').textContent = `Nacimiento: ${birthdate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+                buildCalendar(currentDate);
                 resultsSection.style.opacity = 1;
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -437,7 +438,7 @@
                         steps: [
                             { element: '#codice-cards', title: 'Tu Códice Personal', intro: 'Aquí encontrarás tus números más importantes. Haz clic en cada tarjeta para voltearla y descubrir su significado completo.' },
                             { element: '#sinergia-section', title: 'Sinergia Cósmica', intro: 'En esta sección, puedes analizar tu compatibilidad numerológica con cualquier persona: pareja, socios, amigos o familia.' },
-                            { element: '#calendar-grid', title: 'Calendario Cósmico', intro: 'Finalmente, este es tu calendario. Cada día tiene su propio número y energía, además de eventos cósmicos importantes. Haz clic en un día para ver todos sus detalles. ¡Disfruta tu viaje!' }
+                            { element: document.querySelector('[data-step="5"]'), title: 'Calendario Cósmico', intro: 'Finalmente, este es tu calendario. Cada día tiene su propio número y energía, además de eventos cósmicos importantes. Haz clic en un día para ver todos sus detalles. ¡Disfruta tu viaje!' }
                         ],
                         nextLabel: 'Siguiente >',
                         prevLabel: '< Anterior',
@@ -602,4 +603,5 @@
     </script>
 </body>
 </html>
+
 
