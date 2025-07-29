@@ -19,7 +19,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0a0a1a;
+            background-color: #000000;
             color: #e0e0e0;
             overflow-x: hidden;
         }
@@ -27,9 +27,29 @@
             font-family: 'Playfair Display', serif;
         }
         .hero-bg {
-            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            background-color: #000;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px),
+                radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px);
+            background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px; 
+            background-position: 0 0, 40px 60px, 130px 270px, 70px 100px;
+            animation: stars-move 180s linear infinite;
             position: relative;
             overflow: hidden;
+        }
+        @keyframes stars-move {
+            from { background-position: 0 0, 40px 60px, 130px 270px, 70px 100px; }
+            to { background-position: -10000px 5000px, -10000px 5000px, -10000px 5000px, -10000px 5000px; }
+        }
+        .hero-logo {
+            animation: logo-pulse 4s ease-in-out infinite;
+        }
+        @keyframes logo-pulse {
+            0% { filter: drop-shadow(0 0 10px rgba(0, 191, 255, 0.5)); }
+            50% { filter: drop-shadow(0 0 25px rgba(0, 191, 255, 0.8)); }
+            100% { filter: drop-shadow(0 0 10px rgba(0, 191, 255, 0.5)); }
         }
         .glow-button {
             transition: all 0.3s ease;
@@ -39,24 +59,32 @@
             box-shadow: 0 0 20px rgba(0, 191, 255, 0.9), 0 0 35px rgba(0, 191, 255, 0.6);
             transform: translateY(-3px) scale(1.05);
         }
-        .feature-card {
+        .interactive-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        .feature-card:hover {
-            background: rgba(255, 255, 255, 0.07);
+        .interactive-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at var(--x) var(--y), rgba(0, 191, 255, 0.2), transparent 20%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .interactive-card:hover:before {
+            opacity: 1;
+        }
+        .interactive-card:hover {
+            border-color: rgba(0, 191, 255, 0.5);
             transform: translateY(-5px);
-        }
-        .pricing-card {
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-        .pricing-card:hover {
-            transform: scale(1.05);
-            border-color: #00BFFF; /* DeepSkyBlue */
         }
         .highlighted-card {
             border-color: #00BFFF;
@@ -68,10 +96,10 @@
 
     <!-- HERO SECTION -->
     <section class="hero-bg min-h-screen flex flex-col items-center justify-center text-center p-4 relative">
-        <div class="absolute top-0 left-0 w-full h-full bg-black/20"></div>
-        <div class="relative z-10" data-aos="fade-up">
-            <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-32 h-32 md:w-40 md:h-40 mx-auto mb-6">
-            <h1 class="main-title text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight">
+        <div class="absolute top-0 left-0 w-full h-full bg-black/30"></div>
+        <div class="relative z-10" data-aos="fade-up" data-aos-duration="1000">
+            <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-32 h-32 md:w-40 md:h-40 mx-auto mb-6 hero-logo">
+            <h1 class="main-title text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight" style="text-shadow: 0 0 20px rgba(0,0,0,0.5);">
                 Hay un mapa cósmico escrito en tus números.
             </h1>
             <p class="mt-6 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
@@ -112,22 +140,22 @@
                 <p class="mt-4 text-lg text-gray-300 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="100">Esto es todo lo que descubrirás:</p>
                 <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                     <!-- Feature Card 1 -->
-                    <div class="feature-card rounded-2xl p-6" data-aos="zoom-in">
+                    <div class="interactive-card rounded-2xl p-6" data-aos="zoom-in">
                         <h3 class="font-bold text-xl text-white">Tu Códice Numerológico</h3>
                         <p class="mt-2 text-gray-400 text-sm">Un análisis profundo de tus 5 números maestros: Camino de Vida, Alma, Personalidad, Regalo Divino y Karma. La esencia de quién eres y tu misión en esta vida.</p>
                     </div>
                     <!-- Feature Card 2 -->
-                    <div class="feature-card rounded-2xl p-6" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="interactive-card rounded-2xl p-6" data-aos="zoom-in" data-aos-delay="100">
                         <h3 class="font-bold text-xl text-white">Calendario Personalizado</h3>
                         <p class="mt-2 text-gray-400 text-sm">Una guía diaria que te muestra la energía de cada día según TUS propios números. Sabrás cuándo actuar, cuándo descansar y cómo aprovechar cada vibración.</p>
                     </div>
                     <!-- Feature Card 3 -->
-                    <div class="feature-card rounded-2xl p-6" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="interactive-card rounded-2xl p-6" data-aos="zoom-in" data-aos-delay="200">
                         <h3 class="font-bold text-xl text-white">Reporte PDF Detallado</h3>
                         <p class="mt-2 text-gray-400 text-sm">Recibe un hermoso reporte profesional en PDF con todo tu análisis y calendarios, para que puedas consultarlo siempre, incluso sin conexión a internet.</p>
                     </div>
                     <!-- Feature Card 4 -->
-                    <div class="feature-card rounded-2xl p-6" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="interactive-card rounded-2xl p-6" data-aos="zoom-in" data-aos-delay="300">
                         <h3 class="font-bold text-xl text-white">Análisis de Sinergia</h3>
                         <p class="mt-2 text-gray-400 text-sm">Descubre tu compatibilidad en el amor, el trabajo o la amistad con cualquier persona. Entiende la dinámica de tus relaciones más importantes.</p>
                     </div>
@@ -166,7 +194,7 @@
                 <p class="mt-4 text-lg text-gray-300 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Una pequeña inversión para una vida de claridad.</p>
                 <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
                     <!-- Plan 1 Mes -->
-                    <div class="pricing-card bg-gray-900/30 rounded-2xl p-8 flex flex-col" data-aos="fade-up">
+                    <div class="interactive-card pricing-card rounded-2xl p-8 flex flex-col" data-aos="fade-up">
                         <h3 class="font-bold text-2xl text-cyan-400">Explorador</h3>
                         <p class="mt-4 text-5xl font-bold text-white">$200 <span class="text-lg font-normal text-gray-400">MXN</span></p>
                         <p class="mt-2 text-gray-400">Acceso por 1 Mes</p>
@@ -176,10 +204,10 @@
                             <li>✓ Reporte PDF (1 mes)</li>
                             <li>✓ Análisis de Sinergia</li>
                         </ul>
-                        <a href="mailto:tuemail@example.com?subject=Quiero el Plan Explorador de 1 Mes" class="mt-8 block w-full py-3 px-6 text-center rounded-lg bg-cyan-600 text-white font-semibold hover:bg-cyan-500 transition-colors">Comenzar Ahora</a>
+                        <a href="https://wa.me/527226161301?text=Hola%2C%20estoy%20interesado%20en%20el%20Plan%20Explorador%20de%201%20Mes." target="_blank" class="mt-8 block w-full py-3 px-6 text-center rounded-lg bg-cyan-600 text-white font-semibold hover:bg-cyan-500 transition-colors">Comenzar Ahora</a>
                     </div>
                     <!-- Plan 3 Meses -->
-                    <div class="pricing-card bg-gray-900/30 rounded-2xl p-8 flex flex-col" data-aos="fade-up" data-aos-delay="100">
+                    <div class="interactive-card pricing-card rounded-2xl p-8 flex flex-col" data-aos="fade-up" data-aos-delay="100">
                         <h3 class="font-bold text-2xl text-cyan-400">Iniciado</h3>
                         <p class="mt-4 text-5xl font-bold text-white">$350 <span class="text-lg font-normal text-gray-400">MXN</span></p>
                         <p class="mt-2 text-gray-400">Acceso por 3 Meses</p>
@@ -189,10 +217,10 @@
                             <li>✓ Reporte PDF (hasta 3 meses)</li>
                             <li>✓ Análisis de Sinergia</li>
                         </ul>
-                        <a href="mailto:tuemail@example.com?subject=Quiero el Plan Iniciado de 3 Meses" class="mt-8 block w-full py-3 px-6 text-center rounded-lg bg-cyan-600 text-white font-semibold hover:bg-cyan-500 transition-colors">Elegir Plan</a>
+                        <a href="https://wa.me/527226161301?text=Hola%2C%20estoy%20interesado%20en%20el%20Plan%20Iniciado%20de%203%20Meses." target="_blank" class="mt-8 block w-full py-3 px-6 text-center rounded-lg bg-cyan-600 text-white font-semibold hover:bg-cyan-500 transition-colors">Elegir Plan</a>
                     </div>
                     <!-- Plan 6 Meses (Destacado) -->
-                    <div class="pricing-card bg-gray-900/30 rounded-2xl p-8 relative flex flex-col highlighted-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="interactive-card pricing-card rounded-2xl p-8 relative flex flex-col highlighted-card" data-aos="fade-up" data-aos-delay="200">
                         <div class="absolute top-0 -translate-y-1/2 w-full left-0">
                             <span class="bg-cyan-500 text-white text-sm font-bold px-4 py-1 rounded-full">MÁS POPULAR</span>
                         </div>
@@ -205,10 +233,10 @@
                             <li>✓ Reporte PDF (hasta 6 meses)</li>
                             <li>✓ Análisis de Sinergia</li>
                         </ul>
-                        <a href="mailto:tuemail@example.com?subject=Quiero el Plan Viajero de 6 Meses" class="mt-8 block w-full py-3 px-6 text-center rounded-lg bg-cyan-500 text-white font-semibold hover:bg-cyan-400 transition-colors glow-button">Elegir este Plan</a>
+                        <a href="https://wa.me/527226161301?text=Hola%2C%20estoy%20interesado%20en%20el%20Plan%20Viajero%20de%206%20Meses." target="_blank" class="mt-8 block w-full py-3 px-6 text-center rounded-lg bg-cyan-500 text-white font-semibold hover:bg-cyan-400 transition-colors glow-button">Elegir este Plan</a>
                     </div>
                     <!-- Plan 12 Meses -->
-                    <div class="pricing-card bg-gray-900/30 rounded-2xl p-8 flex flex-col" data-aos="fade-up" data-aos-delay="300">
+                    <div class="interactive-card pricing-card rounded-2xl p-8 flex flex-col" data-aos="fade-up" data-aos-delay="300">
                         <h3 class="font-bold text-2xl text-cyan-400">Maestro</h3>
                         <p class="mt-4 text-5xl font-bold text-white">$1,000 <span class="text-lg font-normal text-gray-400">MXN</span></p>
                         <p class="mt-2 text-gray-400">Acceso por 1 Año</p>
@@ -218,10 +246,9 @@
                             <li>✓ Reporte PDF (hasta 12 meses)</li>
                             <li>✓ Análisis de Sinergia</li>
                         </ul>
-                        <a href="mailto:tuemail@example.com?subject=Quiero el Plan Maestro de 1 Año" class="mt-8 block w-full py-3 px-6 text-center rounded-lg bg-cyan-600 text-white font-semibold hover:bg-cyan-500 transition-colors">Obtener Acceso Anual</a>
+                        <a href="https://wa.me/527226161301?text=Hola%2C%20estoy%20interesado%20en%20el%20Plan%20Maestro%20de%201%20A%C3%B1o." target="_blank" class="mt-8 block w-full py-3 px-6 text-center rounded-lg bg-cyan-600 text-white font-semibold hover:bg-cyan-500 transition-colors">Obtener Acceso Anual</a>
                     </div>
                 </div>
-                <!-- Nota: Recuerda cambiar 'tuemail@example.com' por tu email real en los enlaces de arriba -->
             </div>
         </section>
         
@@ -249,6 +276,17 @@
         AOS.init({
             duration: 800, // Duración de la animación
             once: true, // La animación ocurre solo una vez
+        });
+
+        // Script para el efecto de brillo en las tarjetas
+        document.querySelectorAll('.interactive-card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--x', `${x}px`);
+                card.style.setProperty('--y', `${y}px`);
+            });
         });
     </script>
 </body>
