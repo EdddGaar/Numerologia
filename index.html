@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -129,12 +128,13 @@
     
     <!-- MODAL GENERAL -->
     <div id="general-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 hidden">
-        <div id="modal-content" class="glassmorphism p-6 rounded-2xl max-w-md w-full text-center modal-enter"></div>
+        <div id="modal-content" class="glassmorphism p-6 rounded-2xl max-w-md w-full text-center modal-enter overflow-y-auto max-h-[90vh]"></div>
     </div>
 
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
+    document.addEventListener('DOMContentLoaded', function() {
         particlesJS("particles-js", {
             "particles": { "number": { "value": 40, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#ffffff" }, "shape": { "type": "circle" }, "opacity": { "value": 0.5, "random": false }, "size": { "value": 3, "random": true }, "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.4, "width": 1 }, "move": { "enable": true, "speed": 2, "direction": "none", "out_mode": "out" } },
             "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" } } },
@@ -311,6 +311,21 @@
             "2025-12-21": { icon: "❄️", name: "Solsticio de Invierno", desc: "La noche más larga del año. Un portal energético para la introspección, el descanso y el renacimiento de la luz interior." },
         };
         
+        const moonPhaseInfo = {
+            'Luna Nueva': {
+                reseña: "Nuevos Comienzos. La energía es perfecta para la introspección y sembrar intenciones claras para el futuro. Planifica en calma, no actúes aún."
+            },
+            'Cuarto Creciente': {
+                reseña: "Acción y Crecimiento. Sientes una oleada de motivación. Es el momento ideal para dar los primeros pasos hacia tus metas y superar obstáculos."
+            },
+            'Luna Llena': {
+                reseña: "Culminación y Revelación. Un pico de energía. Las emociones se intensifican. Celebra tus logros y libera lo que ya no te sirve."
+            },
+            'Cuarto Menguante': {
+                reseña: "Liberación y Reevaluación. Tiempo para soltar, reflexionar y hacer ajustes. Libera viejos hábitos y crea espacio para lo nuevo."
+            }
+        };
+
         const form = document.getElementById('numerology-form');
         const portalSection = document.getElementById('portal');
         const resultsSection = document.getElementById('results');
@@ -492,7 +507,7 @@
                     content = `<p class="text-sm">${infoNumeros.regalo[regalo]}</p>`;
                     break;
                 case 'karma':
-                    const karmaText = karma[0] === "Ninguno" ? `<p class="text-sm">${infoNumeros.karma["Ninguno"]}</p>` : karma.map(k => `<p class="text-sm"><strong class="text-cyan-300">${k}:</strong> ${infoNumeros.karma[k]}</p>`).join('');
+                    const karmaText = karma[0] === "Ninguno" ? `<p class="text-sm">${infoNumeros.karma["Ninguno"]}</p>` : karma.map(k => `<p class="text-sm text-left"><strong class="text-cyan-300">${k}:</strong> ${infoNumeros.karma[k]}</p>`).join('');
                     title = `Lecciones Kármicas`;
                     content = `<div class="space-y-2">${karmaText}</div>`;
                     break;
@@ -543,15 +558,31 @@
                 
                 const dayElement = document.createElement('div');
                 dayElement.className = dayClasses;
-                dayElement.style.background = `linear-gradient(45deg, ${diaInfo.grad.split(' ')[0].replace('from-', 'var(--tw-gradient-from, #000)')}, ${diaInfo.grad.split(' ')[1].replace('to-', 'var(--tw-gradient-to, #000)')})`;
+                dayElement.style.background = `linear-gradient(45deg, var(--tw-gradient-from), var(--tw-gradient-to))`;
+                dayElement.style.setProperty('--tw-gradient-from', diaInfo.grad.split(' ')[0].replace('from-', ''));
+                dayElement.style.setProperty('--tw-gradient-to', diaInfo.grad.split(' ')[1].replace('to-', ''));
                 
                 dayElement.innerHTML = `<span class="text-lg sm:text-2xl font-bold" style="color: ${diaPersonal > 9 ? 'black' : 'white'}; text-shadow: 0 0 5px black;">${i}</span><span class="text-xs sm:text-sm font-bold" style="color: ${diaPersonal > 9 ? 'black' : 'white'}; text-shadow: 0 0 5px black;">${diaPersonal}</span><div class="flex text-xs mt-1 gap-1 items-center"><span>${moonPhase.icon}</span>${astroEvent ? `<span>${astroEvent.icon}</span>` : ''}${isFavorable ? '<span class="text-yellow-300">⭐</span>' : ''}</div>`;
-                dayElement.onclick = () => showDayDetails(currentDayDate, diaPersonal, diaInfo, moonPhase, astroEvent);
+                dayElement.onclick = () => showDayDetails(currentDayDate);
                 calendarGrid.appendChild(dayElement);
             }
         }
 
-        function showDayDetails(date, diaPersonal, diaInfo, moonPhase, astroEvent) {
+        function showDayDetails(date) {
+            const { anoPersonal } = currentUserData;
+            const currentDayDate = new Date(date);
+            const month = currentDayDate.getMonth();
+            const year = currentDayDate.getFullYear();
+            const day = currentDayDate.getDate();
+
+            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const astroEvent = astrologicalEvents[dateString];
+
+            const mesPersonal = reducirNumero(anoPersonal + (month + 1));
+            const diaPersonal = reducirNumero(mesPersonal + day);
+            const diaInfo = infoNumeros.diaPersonal[diaPersonal];
+            const moonPhase = getMoonPhase(currentDayDate);
+            
             let astroEventHtml = '';
             if (astroEvent) {
                 astroEventHtml = `
@@ -562,12 +593,16 @@
             }
 
             modalContent.innerHTML = `
-                <p class="text-xl font-bold mb-2">${date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p class="text-xl font-bold mb-2">${currentDayDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 <div class="mb-4">
                     <p class="text-6xl font-bold" style="color:${diaInfo.hex}">${diaPersonal}</p>
                     <p class="text-xl font-bold" style="color:${diaInfo.hex}">Día ${diaInfo.color}</p>
                 </div>
                 ${astroEventHtml}
+                 <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-gray-300 mb-1">${moonPhase.icon} Energía Lunar: ${moonPhase.name}</h4>
+                    <p class="text-sm pl-6">${moonPhaseInfo[moonPhase.name].reseña}</p>
+                </div>
                 <div class="glassmorphism rounded-lg p-3 my-2 text-left">
                     <h4 class="font-bold text-yellow-300 mb-1 flex items-center"><span class="w-4 h-4 rounded-full mr-2 border border-white/20" style="background-color:${diaInfo.hex};"></span>Vibración de Color</h4>
                     <p class="text-sm pl-6">Viste de <strong>${diaInfo.ropa.color}</strong> para ${diaInfo.ropa.frase}</p>
@@ -579,9 +614,6 @@
                  <div class="glassmorphism rounded-lg p-3 my-2 text-left">
                     <h4 class="font-bold text-purple-300 mb-1">✨ Afirmación del Día</h4>
                     <p class="text-sm italic pl-6">"${diaInfo.afirmacion}"</p>
-                </div>
-                <div class="text-left space-y-2 text-xs mt-4">
-                    <p><strong>Fase Lunar:</strong> ${moonPhase.icon} ${moonPhase.name}</p>
                 </div>
                 <button id="close-modal" class="mt-6 w-full p-2 bg-cyan-500 text-white font-bold rounded-lg glow-button">Cerrar</button>`;
             
@@ -602,9 +634,102 @@
                 generalModal.classList.add('hidden');
             }
         });
-        document.getElementById('prev-month').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); buildCalendar(currentDate); });
-        document.getElementById('next-month').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); buildCalendar(currentDate); });
 
+        document.getElementById('prev-month').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            buildCalendar(currentDate);
+        });
+        document.getElementById('next-month').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            buildCalendar(currentDate);
+        });
+
+        // Este código se ejecuta cuando el documento HTML ha sido completamente cargado y parseado.
+        const rangeButtons = document.querySelectorAll('.range-button');
+        if(rangeButtons.length) {
+            rangeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelector('.range-button.active').classList.remove('active');
+                    button.classList.add('active');
+                    currentMonthRange = parseInt(button.dataset.months);
+                    displayCalendars(currentMonthRange);
+                });
+            });
+        }
+        
+        const generatePdfButton = document.getElementById('generate-pdf');
+        if(generatePdfButton) {
+            generatePdfButton.addEventListener('click', async () => {
+                const loader = document.getElementById('pdf-loader');
+                loader.classList.remove('hidden');
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'pt', 'letter');
+                
+                // --- PÁGINA 1: PORTADA Y CÓDICE PERSONAL ---
+                pdf.setFillColor(10, 10, 26);
+                pdf.rect(0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 'F');
+                pdf.setTextColor(224, 224, 224);
+                
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(24);
+                pdf.text('Tu Reporte Numerológico Personalizado', pdf.internal.pageSize.getWidth() / 2, 60, { align: 'center' });
+                
+                pdf.setFontSize(18);
+                pdf.setTextColor(0, 191, 255);
+                pdf.text(currentUserData.name, pdf.internal.pageSize.getWidth() / 2, 90, { align: 'center' });
+                
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(12);
+                pdf.setTextColor(224, 224, 224);
+                let yPos = 140;
+
+                const wrapText = (text, maxWidth) => pdf.splitTextToSize(text, maxWidth);
+
+                const addSection = (title, number, text) => {
+                    if (yPos > 700) { // Margen inferior
+                        pdf.addPage();
+                        pdf.setFillColor(10, 10, 26);
+                        pdf.rect(0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 'F');
+                        yPos = 60;
+                    }
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(14);
+                    pdf.setTextColor(0, 191, 255);
+                    pdf.text(`${title} (${number}):`, 40, yPos);
+                    yPos += 20;
+                    
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(11);
+                    pdf.setTextColor(224, 224, 224);
+                    const lines = wrapText(text, 530);
+                    pdf.text(lines, 40, yPos);
+                    yPos += lines.length * 12 + 20;
+                };
+
+                addSection('Camino de Vida', currentUserData.caminoVida, infoNumeros.caminoVida[currentUserData.caminoVida]);
+                addSection('Alma', currentUserData.alma, infoNumeros.alma[currentUserData.alma]);
+                addSection('Personalidad', currentUserData.personalidad, infoNumeros.personalidad[currentUserData.personalidad]);
+                addSection('Regalo Divino', currentUserData.regalo, infoNumeros.regalo[currentUserData.regalo]);
+                
+                // --- PÁGINAS SIGUIENTES: CALENDARIOS ---
+                for (let i = 0; i < currentMonthRange; i++) {
+                    pdf.addPage();
+                    pdf.setFillColor(10, 10, 26);
+                    pdf.rect(0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 'F');
+                    
+                    const calendarElement = document.getElementById(`calendar-container-${i}`);
+                    const canvas = await html2canvas(calendarElement, { backgroundColor: '#0a0a1a' });
+                    const imgData = canvas.toDataURL('image/png');
+                    
+                    pdf.addImage(imgData, 'PNG', 40, 40, 530, 0); 
+                }
+
+                pdf.save(`Reporte-Sendero-11-${currentUserData.name.split(' ')[0]}.pdf`);
+                loader.classList.add('hidden');
+            });
+        }
+    });
     </script>
 </body>
 </html>
