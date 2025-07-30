@@ -1081,7 +1081,7 @@
                 };
 
                 const encodedData = btoa(JSON.stringify(dataToEncode));
-                const baseURL = window.location.origin + window.location.pathname;
+                const baseURL = window.location.origin + '/app.html'; // CORRECCIÓN CLAVE
                 const finalURL = `${baseURL}?data=${encodedData}`;
 
                 document.getElementById('generated-link-container').classList.remove('hidden');
@@ -1147,12 +1147,8 @@
                 container.innerHTML = '<p class="text-red-400">No se pudo cargar el registro. Revisa la conexión con la base de datos.</p>';
             });
         }
-
-        const clearAnalyticsBtn = document.getElementById('clear-analytics-btn');
-        if (clearAnalyticsBtn) {
-            clearAnalyticsBtn.style.display = 'none'; // Deshabilitado por seguridad
-        }
     });
     </script>
 </body>
 </html>
+
