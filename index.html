@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sendero 11 - Códice Numerológico</title>
+    <!-- SDKs de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- Librerías para PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
@@ -32,11 +36,18 @@
     <div id="particles-js"></div>
 
     <main class="container mx-auto p-4 md:p-8 relative z-10">
+        <!-- ============================================= -->
+        <!-- PORTAL DE ENTRADA (Público o Cliente)         -->
+        <!-- ============================================= -->
         <section id="portal" class="flex min-h-screen flex-col items-center justify-center text-center transition-opacity duration-1000">
             <div id="portal-content" class="w-full">
-                </div>
+                <!-- El contenido se llenará desde JS -->
+            </div>
         </section>
 
+        <!-- ============================================= -->
+        <!-- RESULTADOS (Códice Personal)                  -->
+        <!-- ============================================= -->
         <section id="results" class="hidden opacity-0 transition-opacity duration-1000 space-y-12">
             <div class="pt-8">
                 <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-12 text-white">Tu Códice Personal, <span id="user-name-title" class="text-cyan-400"></span></h2>
@@ -49,7 +60,21 @@
                       <div id="ano-personal-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
                 </div>
             </div>
+
+            <!-- ============================================= -->
+            <!-- SECCIÓN DE HORÓSCOPO (NUEVA)                  -->
+            <!-- ============================================= -->
+            <div id="horoscopo-section" class="pt-8">
+                <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-8 text-white">Horóscopo del Día</h2>
+                <div id="horoscopo-card" class="glassmorphism p-6 rounded-2xl max-w-2xl mx-auto text-center">
+                    <!-- El contenido se llenará desde JS -->
+                    <p id="horoscopo-loading">Buscando tu destino en las estrellas...</p>
+                </div>
+            </div>
             
+            <!-- ============================================= -->
+            <!-- PANEL DE ADMINISTRADOR (NUEVO Y DINÁMICO)     -->
+            <!-- ============================================= -->
             <div id="admin-panel" class="hidden space-y-12">
                 <div id="admin-link-generator">
                     <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-8 text-white">Panel de Administrador</h2>
@@ -59,7 +84,8 @@
                             <div>
                                 <label for="admin-duration" class="sr-only">Duración del acceso</label>
                                 <select id="admin-duration" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition">
-                                    </select>
+                                    <!-- Opciones generadas por JS -->
+                                </select>
                             </div>
                             <button id="generate-link-btn" class="w-full p-3 bg-cyan-500 text-white font-bold rounded-lg text-lg glow-button">
                                 Generar Enlace de Cliente
@@ -83,6 +109,7 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN DE SINERGIA MEJORADA -->
             <div id="sinergia-section">
                 <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-8 text-white">Sinergia Cósmica</h2>
                 <div class="glassmorphism p-6 rounded-2xl max-w-2xl mx-auto">
@@ -149,12 +176,15 @@
         </section>
     </main>
     
+    <!-- MODAL GENERAL -->
     <div id="general-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 hidden">
         <div id="modal-content" class="glassmorphism p-6 rounded-2xl max-w-md w-full text-center modal-enter overflow-y-auto max-h-[90vh]"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     
+    <!-- El script principal ahora está modularizado y se carga aquí -->
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
+

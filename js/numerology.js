@@ -1,3 +1,5 @@
+// js/numerology.js
+
 const letterValues = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 1, k: 2, l: 3, m: 4, n: 5, o: 6, p: 7, q: 8, r: 9, s: 1, t: 2, u: 3, v: 4, w: 5, x: 6, y: 7, z: 8 };
 
 export function reducirNumero(n, preserveMasters = true) {
@@ -71,3 +73,56 @@ export function getMoonPhase(date) {
     ];
     return phases[b];
 }
+
+// --- NUEVAS FUNCIONES PARA EL HORÓSCOPO ---
+
+// Función para obtener el signo zodiacal a partir de una fecha
+export function getZodiacSign(day, month) {
+    const signs = [
+        { sign: 'capricorn', start: 22 }, { sign: 'aquarius', start: 21 },
+        { sign: 'pisces', start: 19 }, { sign: 'aries', start: 21 },
+        { sign: 'taurus', start: 21 }, { sign: 'gemini', start: 22 },
+        { sign: 'cancer', start: 22 }, { sign: 'leo', start: 23 },
+        { sign: 'virgo', start: 23 }, { sign: 'libra', start: 23 },
+        { sign: 'scorpio', start: 23 }, { sign: 'sagitarius', start: 22 }
+    ];
+    let monthIndex = month - 1;
+    if (day < signs[monthIndex].start) {
+        monthIndex = (monthIndex + 11) % 12;
+    }
+    return signs[monthIndex].sign;
+}
+
+// Función para pedir el horóscopo a NUESTRA PROPIA API
+export async function obtenerHoroscopo(signo) {
+    try {
+        // Ahora llamamos a nuestro propio endpoint en /api/horoscopo
+        // Vercel se encargará de ejecutar ese archivo por nosotros.
+        const URL = `/api/horoscopo?signo=${signo}`;
+        
+        // Ya no es POST, porque le pasamos el signo en la URL a nuestra función
+        const response = await fetch(URL); 
+        
+        if (!response.ok) {
+            throw new Error(`Error al llamar a nuestra API interna: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error al obtener el horóscopo:", error);
+        return null;
+    }
+}
+
+// Función para traducir texto usando la API de MyMemory
+export async function traducirTexto(texto) {
+    try {
+        const URL = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=en|es`;
+        const response = await fetch(URL);
+        const data = await response.json();
+        return data.responseData.translatedText;
+    } catch (error) {
+        console.error("Error al traducir:", error);
+        return "No se pudo traducir la descripción.";
+    }
+}
+
