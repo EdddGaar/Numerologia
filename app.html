@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sendero 11 - Códice Numerológico</title>
+    <!-- SDKs de Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- Librerías para PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a1a; color: #e0e0e0; overflow-x: hidden; }
+        #particles-js { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1; }
+        .glassmorphism { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); transition: background 0.3s ease, border 0.3s ease; }
+        .main-title { font-family: 'Playfair Display', serif; }
+        .glow-button { transition: all 0.3s ease; box-shadow: 0 0 5px rgba(0, 191, 255, 0.5), 0 0 10px rgba(0, 191, 255, 0.3); }
+        .glow-button:hover { box-shadow: 0 0 15px rgba(0, 191, 255, 0.8), 0 0 25px rgba(0, 191, 255, 0.5); transform: translateY(-2px); }
+        .info-card { cursor: pointer; }
+        .info-card:hover { transform: scale(1.05); background: rgba(255, 255, 255, 0.1); }
+        .modal-enter { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .day-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(0, 191, 255, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(0, 191, 255, 0); } }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div id="particles-js"></div>
+
+    <main class="container mx-auto p-4 md:p-8 relative z-10">
+        <!-- ============================================= -->
+        <!-- PORTAL DE ENTRADA (Público o Cliente)         -->
+        <!-- ============================================= -->
+        <section id="portal" class="flex min-h-screen flex-col items-center justify-center text-center transition-opacity duration-1000">
+            <div id="portal-content" class="w-full">
+                <!-- El contenido se llenará desde JS: puede ser el form, un error o un mensaje de expirado -->
+            </div>
+        </section>
+
+        <!-- ============================================= -->
+        <!-- RESULTADOS (Códice Personal)                  -->
+        <!-- ============================================= -->
+        <section id="results" class="hidden opacity-0 transition-opacity duration-1000 space-y-12">
+            <div class="pt-8">
+                <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-12 text-white">Tu Códice Personal, <span id="user-name-title" class="text-cyan-400"></span></h2>
+                <div id="codice-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-center">
+                     <div id="camino-vida-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                     <div id="alma-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                     <div id="personalidad-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                     <div id="regalo-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                     <div id="karma-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                     <div id="ano-personal-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                </div>
+            </div>
+            
+            <!-- ============================================= -->
+            <!-- PANEL DE ADMINISTRADOR (NUEVO Y DINÁMICO)     -->
+            <!-- ============================================= -->
+            <div id="admin-panel" class="hidden space-y-12">
+                <div id="admin-link-generator">
+                    <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-8 text-white">Panel de Administrador</h2>
+                    <div class="glassmorphism p-6 rounded-2xl max-w-2xl mx-auto text-center">
+                        <p class="text-center mb-4">Genera el enlace para este cliente.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="admin-duration" class="sr-only">Duración del acceso</label>
+                                <select id="admin-duration" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition">
+                                    <!-- Opciones generadas por JS -->
+                                </select>
+                            </div>
+                            <button id="generate-link-btn" class="w-full p-3 bg-cyan-500 text-white font-bold rounded-lg text-lg glow-button">
+                                Generar Enlace de Cliente
+                            </button>
+                            <div id="generated-link-container" class="hidden pt-4">
+                                <p class="text-gray-300 mb-2">Enlace generado:</p>
+                                <input type="text" id="generated-link" class="w-full p-2 bg-black/20 border border-white/30 rounded-lg text-center text-cyan-300" readonly>
+                                <button id="copy-link-btn" class="mt-2 p-2 bg-purple-500 text-white font-bold rounded-lg text-sm">Copiar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-analytics">
+                    <h2 class="main-title text-3xl sm:text-4xl font-bold text-center mb-8 text-white">Registro de Clientes</h2>
+                    <div class="glassmorphism p-6 rounded-2xl max-w-4xl mx-auto">
+                        <div id="analytics-table-container" class="overflow-x-auto">
+                           <p class="text-gray-400">Cargando registros...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN DE SINERGIA MEJORADA -->
+            <div id="sinergia-section">
+                <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-8 text-white">Sinergia Cósmica</h2>
+                <div class="glassmorphism p-6 rounded-2xl max-w-2xl mx-auto">
+                    <p class="text-center mb-4">Analiza tu compatibilidad numerológica con otras personas.</p>
+                    <form id="sinergia-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="other-name" class="sr-only">Nombre completo de la otra persona</label>
+                                <input type="text" id="other-name" placeholder="Nombre completo de la otra persona" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition" >
+                            </div>
+                            <div>
+                                <label for="other-birthdate" class="sr-only">Fecha de nacimiento de la otra persona</label>
+                                <input type="date" id="other-birthdate" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition" >
+                            </div>
+                        </div>
+                        <div>
+                            <label for="relationship-type" class="sr-only">Tipo de relación</label>
+                            <select id="relationship-type" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
+                                <option value="amor">Compatibilidad Amorosa</option>
+                                <option value="trabajo">Compatibilidad Laboral</option>
+                                <option value="amistad">Compatibilidad de Amistad</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full p-3 bg-purple-500 text-white font-bold rounded-lg text-lg glow-button">Calcular Sinergia</button>
+                    </form>
+                    <div id="sinergia-result" class="mt-6 text-center min-h-[50px]"></div>
+                </div>
+            </div>
+
+            <div id="calendar-section">
+                <h2 id="calendar-title" class="main-title text-3xl sm:text-4xl font-bold text-center mb-4 text-white"></h2>
+                <p id="calendar-subtitle" class="text-center text-gray-400 mb-8"></p>
+                <div class="glassmorphism p-4 sm:p-6 rounded-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <button id="prev-month" class="p-2 rounded-full hover:bg-white/10 transition">&lt;</button>
+                        <h3 id="month-year" class="text-2xl font-bold text-white"></h3>
+                        <button id="next-month" class="p-2 rounded-full hover:bg-white/10 transition">&gt;</button>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1 sm:gap-2"></div>
+                </div>
+            </div>
+            
+            <div id="pdf-section">
+                <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-8 text-white">Tu Reporte Personalizado</h2>
+                <div class="glassmorphism p-6 rounded-2xl max-w-2xl mx-auto text-center">
+                     <p class="text-center mb-4">Descarga tu códice y tu calendario numerológico en formato PDF.</p>
+                     <div class="flex flex-wrap justify-center gap-2 mb-4" id="pdf-range-buttons">
+                        <button data-months="1" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">1 Mes</button>
+                        <button data-months="2" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">2 Meses</button>
+                        <button data-months="6" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">6 Meses</button>
+                        <button data-months="12" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">1 Año</button>
+                     </div>
+                     <button id="generate-pdf-btn" class="w-full p-3 bg-green-600 text-white font-bold rounded-lg text-lg glow-button">
+                        Generar y Descargar PDF
+                     </button>
+                     <div id="pdf-loader" class="hidden mt-4">
+                        <p>Generando tu PDF, por favor espera... 🔮</p>
+                        <div class="w-full bg-gray-700 rounded-full h-2.5 mt-2">
+                            <div id="pdf-progress-bar" class="bg-cyan-400 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- MODAL GENERAL -->
+    <div id="general-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 hidden">
+        <div id="modal-content" class="glassmorphism p-6 rounded-2xl max-w-md w-full text-center modal-enter overflow-y-auto max-h-[90vh]"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+    // =================================================================================
+    // INICIO DEL SCRIPT PRINCIPAL
+    // =================================================================================
+
+    // ---------------------------------------------------------------------------------
+    // 1. DATOS Y TEXTOS DE LA APLICACIÓN
+    // ---------------------------------------------------------------------------------
+    const infoNumeros = {
+        caminoVida: {
+            1: "Como líder natural (1), tu misión es abrir caminos, ser innovador y confiar en tu independencia. Vienes a aprender a creer en ti mismo y a liderar con valentía.",
+            2: "Tu sendero (2) es el de la cooperación y la diplomacia. Tu misión es unir, mediar y crear armonía. Vienes a aprender sobre la paciencia y el poder de la colaboración.",
+            3: "Naciste para comunicar y crear (3). Tu misión es inspirar alegría, optimismo y creatividad a tu alrededor. Vienes a aprender a expresar tus emociones y talentos.",
+            4: "El constructor (4). Tu misión es crear orden, estabilidad y seguridad. Vienes a aprender el valor del trabajo duro, la disciplina y la honestidad para construir un legado duradero.",
+            5: "El aventurero (5). Tu misión es experimentar la libertad en todas sus formas. Vienes a aprender a adaptarte al cambio, a ser versátil y a usar tu libertad de forma constructiva.",
+            6: "Tu camino (6) es el del amor y la responsabilidad. Tu misión es cuidar de tu familia y tu comunidad. Vienes a aprender sobre el servicio, el equilibrio y la belleza del hogar.",
+            7: "El buscador de la verdad (7). Tu misión es analizar, investigar y conectar con tu sabiduría interior. Vienes a aprender a confiar en tu intuición y a compartir tu conocimiento.",
+            8: "Tu sendero (8) es el del poder y la abundancia. Tu misión es manifestar el éxito material y usar tu poder con sabiduría. Vienes a aprender a equilibrar lo material y lo espiritual.",
+            9: "El humanitario (9). Tu misión es servir a los demás y mostrar compasión. Vienes a aprender a soltar el pasado y a entregar tu amor de forma universal.",
+            11: "Como maestro espiritual (11), tu misión es inspirar e iluminar a otros. Vienes a aprender a confiar en tu intuición elevada y a vivir de acuerdo a un ideal superior.",
+            22: "El maestro constructor (22). Tu misión es convertir grandes sueños en realidad para el bien de la humanidad. Vienes a aprender a usar tu poder para crear un impacto duradero."
+        },
+        alma: {
+            1: "Tu deseo más profundo es ser el número uno: liderar, ser independiente y pionero. Anhelas la autonomía y el reconocimiento por tus propios méritos.",
+            2: "Buscas la armonía, la paz y la unión. Tu alma anhela la cooperación y las relaciones cercanas. La diplomacia y el amor son tus mayores motivaciones.",
+            3: "Anhelas expresarte, socializar y disfrutar la vida. Tu alma se nutre de la creatividad, la comunicación y la alegría. La autoexpresión es tu motor.",
+            4: "Necesitas seguridad, orden y estabilidad. Tu alma busca construir algo sólido y duradero. La planificación, el trabajo y la disciplina te dan paz.",
+            5: "Ansías libertad, aventura y cambio constante. Tu alma se aburre con la rutina y busca nuevas experiencias. La variedad es esencial para tu felicidad.",
+            6: "Tu mayor deseo es el amor, el hogar y la responsabilidad familiar. Tu alma se siente plena al cuidar y servir a los demás. La belleza y la armonía son tu refugio.",
+            7: "Buscas la verdad y el conocimiento profundo. Tu alma es analítica e introspectiva, y anhela momentos de soledad para estudiar y conectar con tu sabiduría interior.",
+            8: "Anhelas el éxito material, el poder y el control. Tu alma tiene una gran ambición y busca lograr grandes cosas en el mundo material para sentirse segura.",
+            9: "Tu alma busca servir a la humanidad de forma desinteresada. Te motiva la compasión, el altruismo y el deseo de hacer del mundo un lugar mejor.",
+            11: "Deseas inspirar, canalizar mensajes y elevar la conciencia de otros. Tu alma tiene una misión espiritual y busca la iluminación por encima de todo.",
+            22: "Anhelas construir algo grande y duradero que beneficie a la humanidad. Tu alma tiene el potencial de convertir sueños idealistas en realidades tangibles."
+        },
+        personalidad: {
+            1: "Proyectas una imagen de líder seguro, capaz e independiente. La gente te ve como alguien que toma la iniciativa y no teme estar al frente.",
+            2: "Pareces diplomático, amable y pacífico. La gente te percibe como un mediador natural, alguien que busca la armonía y evita el conflicto.",
+            3: "Te ven como alguien sociable, encantador y lleno de carisma. Proyectas una energía optimista y creativa que atrae a los demás.",
+            4: "Proyectas una imagen de seriedad, confianza y trabajo duro. La gente te ve como alguien estable, organizado y en quien se puede confiar.",
+            5: "Pareces versátil, aventurero y amante de la libertad. Proyectas una energía magnética y curiosa, como si siempre estuvieras listo para algo nuevo.",
+            6: "Te perciben como alguien responsable, protector y hogareño. La gente confía en ti para dar consejos y te ve como el pilar de tu comunidad o familia.",
+            7: "Proyectas un aire de misterio, sabiduría e intelecto. Pareces reservado y analítico, alguien que prefiere la profundidad a la superficialidad.",
+            8: "Te ven como una persona poderosa, exitosa y con autoridad. Proyectas una imagen de control y ambición que inspira respeto (y a veces intimidación).",
+            9: "Pareces compasivo, humanitario y carismático. La gente se siente atraída por tu energía generosa y tu aparente sabiduría sobre la vida.",
+            11: "Proyectas una intensa energía espiritual e idealismo. La gente te percibe como alguien intuitivo, sensible y con una conexión especial con lo invisible.",
+            22: "Te ven como un maestro constructor, una persona práctica con grandes visiones. Proyectas la capacidad de lograr lo que para otros parece imposible."
+        },
+        regalo: {
+            1: "Tu don es la originalidad y el liderazgo. Tienes la capacidad innata de iniciar proyectos y ser pionero. ¡Confía en tus ideas!",
+            2: "Tu regalo es la diplomacia y la sensibilidad. Eres un mediador natural que sabe cómo unir a las personas y crear armonía.",
+            3: "La comunicación es tu don. Tienes un talento natural para la expresión creativa, ya sea escribiendo, hablando o en las artes.",
+            4: "Tu regalo es la organización y la disciplina. Tienes la habilidad de construir sistemas sólidos y traer orden al caos.",
+            5: "La versatilidad es tu don. Te adaptas fácilmente al cambio y tienes un talento para la comunicación y la venta de ideas.",
+            6: "Tu regalo es la capacidad de nutrir y sanar. Tienes un don para crear belleza, armonía y cuidar de los demás.",
+            7: "La sabiduría interior es tu regalo. Eres un pensador profundo con una gran intuición y la capacidad de ver más allá de lo superficial.",
+            8: "Tu don es el poder de la manifestación. Tienes un talento natural para los negocios, las finanzas y el liderazgo ejecutivo.",
+            9: "La compasión es tu regalo. Tienes una habilidad innata para entender a los demás y un gran corazón para el servicio humanitario."
+        },
+        karma: {
+            1: "Debes aprender a ser más independiente y a desarrollar la confianza en ti mismo, sin depender de la aprobación de los demás.",
+            2: "Tu lección es aprender a cooperar y a ser diplomático. Necesitas desarrollar la paciencia y la sensibilidad hacia los sentimientos ajenos.",
+            3: "La lección es aprender a expresar tus emociones de forma positiva y a no tomar la vida tan en serio. La alegría y la creatividad son tu tarea.",
+            4: "Necesitas aprender el valor del trabajo duro y la disciplina. La lección es ser más organizado, práctico y construir bases sólidas.",
+            5: "Tu lección es aprender a manejar la libertad de forma constructiva, evitando los excesos y el miedo al compromiso.",
+            6: "Debes aprender a aceptar la responsabilidad en el hogar y en tus relaciones, equilibrando el dar y el recibir.",
+            7: "Tu karma te pide que desarrolles la fe y la confianza en lo invisible. La lección es conectar con tu sabiduría interior y no ser excesivamente escéptico.",
+            8: "La lección es aprender a manejar el poder y el dinero con sabiduría y generosidad, evitando ser demasiado dominante o materialista.",
+            9: "Debes aprender a soltar, a perdonar y a servir a los demás sin esperar nada a cambio. La compasión universal es tu meta.",
+            "Ninguno": "¡Felicidades! No tienes lecciones kármicas pendientes por tu nombre. Esto te da una mayor libertad para enfocarte en tu misión de vida."
+        },
+        añoPersonal: {
+            1: { color: "Rojo", joya: "Rubí", palabra: "COMIENZO", desc: "Es tiempo para sembrar. Nuevos proyectos, cambios y planes. Asume el control." },
+            2: { color: "Anaranjado", joya: "Piedra de Luna", palabra: "PACIENCIA", desc: "Momento de unión, diplomacia y calma. Fortalece relaciones y no fuerces las cosas." },
+            3: { color: "Amarillo", joya: "Topacio", palabra: "GOZO", desc: "Año para socializar, crea y comunicar. Diviértete, sonríe y expande tu círculo." },
+            4: { color: "Verde", joya: "Esmeralda", palabra: "PRÁCTICO", desc: "Año de ardua labor y construcción. Organiza, ahorra y construye bases firmes." },
+            5: { color: "Azul", joya: "Turquesa", palabra: "CAMBIO", desc: "Espera lo inesperado. Año de libertad, viajes y aventura. Aléjate de la rutina." },
+            6: { color: "Añil", joya: "Perla", palabra: "RESPONSABILIDAD", desc: "Centrado en el amor, hogar y familia. Acepta obligaciones y embellece tu entorno." },
+            7: { color: "Morado", joya: "Amatista", palabra: "FE", desc: "Año espiritual para la reflexión. Tómate tiempo para ti, medita y contacta con la naturaleza." },
+            8: { color: "Beige/Rosa", joya: "Diamante", palabra: "LOGRO", desc: "Tiempo de cosecha, éxito y dinero. Invierte, organiza y sé ejecutivo." },
+            9: { color: "Tonos Pastel", joya: "Ópalo", palabra: "TERMINACIÓN", desc: "Cierre de ciclos. Limpia y elimina lo que ya no sirve. Deja ir el pasado." },
+            11: { color: "Plata", joya: "Plata", palabra: "INTUICIÓN", desc: "Año de activación espiritual. Brilla y establece nuevas normas. Crecimiento interior." },
+            22: { color: "Coral", joya: "Cobre", palabra: "CONSTRUCCIÓN", desc: "Colabora en proyectos importantes para la sociedad. Materializa tus sueños a gran escala." }
+        },
+        diaPersonal: {
+            1: { color: "Rojo", hex: "#ef4444", grad: "from-red-500 to-orange-500", consejo: "Hoy es perfecto para presentar esa nueva idea que tienes. ¡Toma la iniciativa!", afirmacion: "Confío en mi capacidad para liderar y empezar de nuevo.", ropa: { color: "Rojo", frase: "potenciar tu energía de liderazgo e iniciativa." } },
+            2: { color: "Naranja", hex: "#f97316", grad: "from-orange-400 to-amber-400", consejo: "Escucha más de lo que hablas. La clave de hoy está en la diplomacia y el trabajo en equipo.", afirmacion: "Atraigo relaciones armoniosas a través de la paciencia y la cooperación.", ropa: { color: "Naranja", frase: "fomentar la cooperación y la calidez en tus interacciones." } },
+            3: { color: "Amarillo", hex: "#eab308", grad: "from-yellow-300 to-lime-300", consejo: "Comunícate, socializa y ríe. Tu energía positiva atraerá buenas oportunidades.", afirmacion: "Expreso mi alegría y creatividad libremente.", ropa: { color: "Amarillo", frase: "atraer la alegría y estimular tu creatividad." } },
+            4: { color: "Verde", hex: "#22c55e", grad: "from-green-400 to-teal-400", consejo: "Es día de arremangarse. Organiza tus finanzas, tu casa o tu agenda. El esfuerzo de hoy dará frutos.", afirmacion: "Construyo mi futuro sobre bases sólidas y seguras.", ropa: { color: "Verde", frase: "atraer el equilibrio y la energía de crecimiento." } },
+            5: { color: "Azul", hex: "#06b6d4", grad: "from-cyan-400 to-sky-400", consejo: "Rompe la rutina. Prueba un camino diferente para ir al trabajo, come algo nuevo o atrévete a esa aventura.", afirmacion: "Acepto el cambio con valentía y disfruto de mi libertad.", ropa: { color: "Azul", frase: "facilitar la comunicación y la expresión de tus ideas." } },
+            6: { color: "Añil", hex: "#4338ca", grad: "from-indigo-600 to-blue-800", consejo: "Llama a un ser querido o dedica tiempo a embellecer tu hogar. El amor y el deber llaman.", afirmacion: "Asumo mis responsabilidades con amor y dedicación.", ropa: { color: "Añil", frase: "fortalecer los lazos afectivos y la armonía en el hogar." } },
+            7: { color: "Violeta", hex: "#9333ea", grad: "from-purple-500 to-fuchsia-500", consejo: "Evita las multitudes. Busca un momento de soledad para leer, meditar o simplemente analizar tus pensamientos.", afirmacion: "Encuentro sabiduría y paz en mi mundo interior.", ropa: { color: "Morado", frase: "conectar con tu intuición y tu lado espiritual." } },
+            8: { color: "Rosa", hex: "#ec4899", grad: "from-pink-400 to-rose-400", consejo: "Es un día de poder. Ideal para negociar un aumento, cerrar un trato o presentar un presupuesto. ¡Piensa en grande!", afirmacion: "Soy un imán para el éxito, la abundancia y el poder material.", ropa: { color: "Beige, Rosa o Café", frase: "alinearte con la energía de la abundancia y el éxito." } },
+            9: { color: "Pastel", hex: "#c4b5fd", grad: "from-indigo-200 to-purple-200", consejo: "Suelta lo que ya no sirve. Termina ese proyecto pendiente, dona ropa que no usas o perdona una vieja ofensa.", afirmacion: "Libero el pasado con gratitud y me abro a la sabiduría universal.", ropa: { color: "Tonos Pastel", frase: "fomentar la compasión y la generosidad." } },
+            11: { color: "Blanco/Gris", hex: "#d1d5db", grad: "from-gray-200 to-slate-200", consejo: "Presta atención a tus corazonadas y sueños. Hoy tu intuición está en su punto más alto.", afirmacion: "Mi intuición es mi guía más poderosa.", ropa: { color: "Blanco, Negro o Gris", frase: "amplificar tu intuición y tu conexión espiritual." } },
+            22: { color: "Coral", hex: "#fb923c", grad: "from-red-300 to-orange-300", consejo: "Tus acciones de hoy pueden tener un gran impacto. Piensa en cómo puedes beneficiar a tu comunidad.", afirmacion: "Materializo grandes sueños para el bien de todos.", ropa: { color: "Coral o Castaño", frase: "materializar tus ideas y construir proyectos sólidos." } }
+        },
+        periodos: {
+            1: { debil: "Oct, Nov, Dic", fuerte: "21 Mar - 28 Abr, 23 Jul - 31 Ago", favorables: ["Domingo", "Lunes"] },
+            2: { debil: "Dic, Ene, Feb", fuerte: "22 Jun - 29 Jul", favorables: ["Lunes", "Domingo"] },
+            3: { debil: "Oct, 1-18 Nov", fuerte: "19 Feb - 28 Mar, 21 Nov - 28 Dic", favorables: ["Lunes", "Miércoles", "Jueves"] },
+            4: { debil: "Oct, Nov, Dic", fuerte: "21 Mar - 30 Abr, 23 Jul - 29 Ago", favorables: ["Sábado", "Domingo", "Lunes"] },
+            5: { debil: "1-21 May, Dic", fuerte: "22 May - 30 Jun, 22 Ago - 30 Sep", favorables: ["Miércoles", "Viernes"] },
+            6: { debil: "1-20 Abr, Nov", fuerte: "21 Abr - 28 May, 23 Sep - 30 Oct", favorables: ["Viernes", "Miércoles"] },
+            7: { debil: "Ene, Feb", fuerte: "22 Jun - 30 Jul", favorables: ["Domingo", "Lunes", "Miércoles"] },
+            8: { debil: "27-28 Feb, Mar, Abr", fuerte: "21 Dic - 27 Ene, 20 Ene - 26 Feb", favorables: ["Sábado"] },
+            9: { debil: "1-20 Mar, May, Jun, 1-20 Oct, 27 Nov - 27 Dic", fuerte: "21 Mar - 30 Abr, 23 Oct - 30 Nov", favorables: ["Martes", "Viernes"] }
+        }
+    };
+    const sinergiaDetallada = {
+        '1-1': { amor: "Dos líderes juntos. Una relación de poder y respeto mutuo, pero puede haber choques de ego. Necesitan admirarse y darse espacio para brillar individualmente.", trabajo: "Una dupla imparable para iniciar proyectos. Son ambiciosos y directos. El desafío es decidir quién tiene la última palabra. Ideal si tienen roles claros.", amistad: "Amistad basada en la acción y la aventura. Se motivan mutuamente a ser mejores. Pueden competir sanamente, pero deben cuidar no herir sensibilidades." },
+        '1-2': { amor: "El líder y el diplomático. El 1 abre el camino y el 2 crea el hogar. Se complementan de maravilla si el 1 aprende a ser más considerado y el 2 a expresar sus necesidades.", trabajo: "Excelente combinación. El 1 aporta la visión y la fuerza, mientras que el 2 se encarga de los detalles, la negociación y el ambiente laboral. El 1 es el CEO, el 2 el COO.", amistad: "Una amistad de apoyo incondicional. El 2 es el confidente perfecto para el 1, y el 1 inspira al 2 a salir de su zona de confort. Muy leales." },
+        '1-3': { amor: "Pura diversión y creatividad. La relación es alegre, social y llena de vida. El 1 admira la chispa del 3, y el 3 la seguridad del 1. Deben cuidar no caer en la superficialidad.", trabajo: "Una dupla carismática y excelente para ventas o marketing. El 1 dirige y el 3 comunica el mensaje de forma atractiva. Pueden distraerse fácilmente.", amistad: "La pareja social perfecta. Siempre tienen planes y son el alma de la fiesta. La lealtad del 1 equilibra la naturaleza más dispersa del 3." },
+        '1-4': { amor: "El innovador y el constructor. Una relación de opuestos que puede ser muy sólida. El 1 quiere correr y el 4 construir lento pero seguro. La paciencia es la clave del éxito.", trabajo: "El 1 tiene las ideas y el 4 crea el plan para ejecutarlas. Si logran respetar sus ritmos, son capaces de construir imperios. Potencial de frustración por sus diferentes velocidades.", amistad: "Una amistad poco común pero estable. El 1 aporta la emoción y el 4 la seguridad. Pueden aprender mucho el uno del otro si se abren a sus diferencias." },
+        '1-5': { amor: "¡Aventura al máximo! Dos espíritus libres que se entienden a la perfección. La relación es excitante y llena de cambios. El desafío es el compromiso a largo plazo.", trabajo: "Ideal para proyectos que requieran viajes, innovación y adaptabilidad. Son una dupla que odia la rutina y busca constantemente nuevos desafíos. La organización no es su fuerte.", amistad: "Compañeros de viaje y aventuras. Nunca se aburren juntos. Su amistad se basa en la libertad y el respeto por el espacio del otro." },
+        '1-6': { amor: "El líder independiente y el protector del hogar. El 6 necesita cuidar y el 1 necesita su espacio. El equilibrio se encuentra cuando el 1 valora el nido que el 6 crea, y el 6 no asfixia al 1.", trabajo: "El 1 puede ser el jefe y el 6 el gerente que cuida del equipo. El 6 aporta la responsabilidad y el sentido humano que al 1 a veces le falta. Buena dupla si sus roles están claros.", amistad: "El 6 es el amigo consejero y el 1 el que empuja a la acción. El 6 ofrece un puerto seguro para el 1, y el 1 ayuda al 6 a no preocuparse tanto." },
+        '1-7': { amor: "Una unión de mente y acción. El 1 es el cuerpo y el 7 la mente. Se sienten atraídos por su inteligencia mutua. Necesitan tiempo a solas para recargarse y respetar sus mundos internos.", trabajo: "El estratega (7) y el ejecutor (1). El 7 analiza y crea la estrategia perfecta, y el 1 la lleva a cabo con determinación. Combinación muy poderosa en lo intelectual.", amistad: "Una amistad profunda basada en conversaciones interesantes y respeto por la inteligencia del otro. No son muy demostrativos, pero su conexión es mental." },
+        '1-8': { amor: "Una pareja de poder. Ambos son ambiciosos, fuertes y buscan el éxito. Se admiran y se impulsan mutuamente. El peligro es que la relación se convierta en una competencia.", trabajo: "La dupla de negocios por excelencia. Ambos tienen visión, ambición y capacidad de liderazgo. Juntos pueden alcanzar grandes metas materiales. Deben definir claramente el liderazgo.", amistad: "Se ven como iguales y se respetan. Su amistad puede estar centrada en objetivos comunes, negocios o deportes. Son un equipo formidable." },
+        '1-9': { amor: "El líder individualista y el humanitario universal. El 9 enseña al 1 sobre la compasión y el 1 enseña al 9 a poner límites. Una relación de gran aprendizaje y crecimiento espiritual.", trabajo: "El 1 puede liderar una causa y el 9 ser el corazón de la misma. El 1 busca el éxito del proyecto, el 9 el impacto en la gente. Se complementan si unen sus motivaciones.", amistad: "El 9 es el sabio consejero del 1. El 1 admira la sabiduría del 9, y el 9 la valentía del 1. Una amistad con un toque de maestro y aprendiz." },
+        '2-2': { amor: "Pura sensibilidad y romance. Una relación muy tierna y emocional. Se entienden sin palabras. El peligro es la codependencia y la hipersensibilidad a las críticas.", trabajo: "Excelentes mediadores y colaboradores. Trabajan bien en equipo, pero pueden tener dificultades para tomar decisiones firmes y liderar. Ideales en roles de apoyo.", amistad: "Una amistad íntima y de total confianza. Son el paño de lágrimas el uno del otro. Necesitan cuidarse de no caer en el chisme o la negatividad." },
+        '2-3': { amor: "El diplomático y el comunicador. Una pareja encantadora, sociable y muy querida. El 3 saca al 2 de su caparazón y el 2 le da al 3 la estabilidad emocional que necesita.", trabajo: "Excelente en relaciones públicas, servicio al cliente o ventas. El 2 crea la conexión y el 3 cierra el trato con su carisma. Muy buena dupla creativa.", amistad: "Una amistad divertida y equilibrada. El 3 organiza las fiestas y el 2 se asegura de que todos se sientan incluidos. Se complementan muy bien." },
+        '2-4': { amor: "La estabilidad y la seguridad son la base de esta relación. El 2 aporta la calidez y el 4 la estructura. Es una unión tradicional y muy leal. Puede faltar un poco de espontaneidad.", trabajo: "Una dupla muy confiable y trabajadora. El 4 planifica y el 2 se asegura de que el equipo esté contento. Son la columna vertebral de cualquier empresa.", amistad: "Una amistad para toda la vida. Se basa en la lealtad, la confianza y el apoyo práctico. Son de esos amigos que siempre están ahí." },
+        '2-5': { amor: "Una combinación desafiante. El 2 busca seguridad y el 5 libertad. El 5 puede sentirse atado y el 2 inseguro. Requiere mucha comunicación y comprensión de las necesidades del otro.", trabajo: "El 5 es el agente de ventas viajero y el 2 el que maneja la oficina. Pueden funcionar si sus roles son muy diferentes y no dependen el uno del otro para sus tareas diarias.", amistad: "El 5 invita al 2 a la aventura y el 2 le ofrece al 5 un oído comprensivo. La amistad puede funcionar si no hay expectativas de un compromiso constante." },
+        '2-6': { amor: "La pareja más hogareña y familiar del zodiaco numerológico. Ambos buscan amor, seguridad y cuidar del otro. Es una relación muy nutritiva y estable. Deben evitar la sobreprotección.", trabajo: "Ideal para profesiones de servicio, salud o educación. Ambos son responsables y se preocupan por el bienestar de los demás. Crean un ambiente de trabajo muy armonioso.", amistad: "Son como familia. Su amistad es profunda, leal y llena de cuidados mutuos. Siempre están disponibles el uno para el otro." },
+        '2-7': { amor: "El sensible y el intelectual. Una unión de dos mundos internos muy ricos. El 7 necesita soledad y el 2 compañía. Deben respetar sus diferentes necesidades emocionales y sociales.", trabajo: "El 7 investiga y analiza, el 2 negocia y presenta los resultados. Pueden funcionar bien en campos de investigación o consultoría. El 7 es la mente, el 2 la cara pública.", amistad: "Una amistad tranquila y de pocas palabras. Disfrutan de la compañía silenciosa y de conversaciones profundas. No necesitan estar siempre juntos para sentirse conectados." },
+        '2-8': { amor: "El poder y la sensibilidad. El 8 protege y provee, y el 2 crea un refugio de paz. El 8 toma las decisiones y el 2 las apoya. El 8 debe cuidar su autoritarismo y el 2 su pasividad.", trabajo: "El 8 es el jefe y el 2 su mano derecha. El 8 dirige con fuerza y el 2 maneja las relaciones interpersonales. Una combinación de negocios muy exitosa.", amistad: "El 8 es el amigo protector y el 2 el amigo leal. El 2 admira la fuerza del 8, y el 8 valora la lealtad del 2. Una amistad sólida." },
+        '2-9': { amor: "Dos almas compasivas y sensibles. Se entienden a un nivel emocional muy profundo. Ambos son idealistas y buscan ayudar. Pueden ser poco prácticos con las finanzas y los asuntos mundanos.", trabajo: "Perfectos para ONGs, fundaciones o profesiones de ayuda. Su motivación es el servicio, no el dinero. Crean un ambiente de trabajo lleno de compasión.", amistad: "Una amistad espiritual y de gran conexión. Comparten un profundo deseo de hacer del mundo un lugar mejor. Su vínculo es casi telepático." },
+        '3-3': { amor: "La fiesta interminable. Una relación llena de risas, creatividad, socialización y optimismo. La vida nunca es aburrida. El desafío es la responsabilidad y la profundidad emocional.", trabajo: "Un torbellino de ideas creativas. Ideal para publicidad, artes o entretenimiento. Pueden tener problemas con la disciplina y el seguimiento de los proyectos.", amistad: "Amigos para divertirse y crear. Siempre están haciendo algo nuevo y emocionante. Se inspiran mutuamente, pero pueden ser poco confiables con los compromisos." },
+        '3-4': { amor: "El artista y el contador. El 3 quiere jugar y el 4 quiere trabajar. Una relación de opuestos que requiere mucho ajuste. El 4 puede ver al 3 como inmaduro, y el 3 al 4 como aburrido.", trabajo: "El 3 tiene la idea creativa y el 4 la estructura para hacerla rentable. Si logran valorar sus talentos mutuos, pueden ser muy exitosos. La comunicación es clave.", amistad: "Una amistad que puede aportar equilibrio. El 3 enseña al 4 a relajarse y el 4 enseña al 3 a ser más responsable. Es un aprendizaje constante." },
+        '3-5': { amor: "La pareja más sociable y aventurera. Ambos aman la vida, la gente y las nuevas experiencias. Su relación es un torbellino de actividad. El desafío es encontrar momentos de calma y conexión íntima.", trabajo: "Ideal para turismo, eventos o medios de comunicación. Son carismáticos, adaptables y excelentes comunicadores. El peligro es la falta de enfoque y constancia.", amistad: "Los mejores amigos para salir de fiesta o de viaje. Su lema es 'la vida es corta'. Se entienden perfectamente y nunca se juzgan por su necesidad de diversión." },
+        '3-6': { amor: "El creativo y el responsable. El 6 se siente atraído por la alegría del 3, y el 3 por el corazón amoroso del 6. El 6 puede intentar 'arreglar' al 3, y el 3 sentirse controlado. Necesitan equilibrio.", trabajo: "El 3 es el creativo y el 6 el que se asegura de que el cliente esté feliz. Ideal para diseño, decoración o profesiones que combinen arte y servicio. El 6 aporta la estructura.", amistad: "Una amistad cálida y alegre. El 6 es el anfitrión perfecto y el 3 el invitado estrella. Se cuidan y se divierten juntos." },
+        '3-7': { amor: "El comunicador y el pensador. El 3 es social y el 7 solitario. El 3 es un libro abierto y el 7 un misterio. Una atracción de opuestos que puede ser fascinante o frustrante.", trabajo: "El 7 investiga y escribe, el 3 lo comunica al mundo. Ideal para divulgación científica, escritura o enseñanza. Respetan sus diferentes procesos mentales.", amistad: "Una amistad curiosa. El 3 saca al 7 de su cueva y el 7 le enseña al 3 sobre la profundidad. Pueden tener conversaciones muy estimulantes." },
+        '3-8': { amor: "El carisma y el poder. El 3 aporta la chispa social y el 8 el éxito material. Juntos forman una pareja influyente y exitosa. El 8 puede ser muy controlador para el espíritu libre del 3.", trabajo: "El 8 es el productor y el 3 la estrella. El 8 maneja el negocio y el 3 es la cara pública. Muy potentes en el mundo del espectáculo, la política o las grandes empresas.", amistad: "Una amistad de alto perfil. Disfrutan del éxito y de los placeres de la vida. El 8 puede ser un gran mentor para el 3, ayudándole a monetizar su talento." },
+        '3-9': { amor: "Dos creativos con un gran corazón. Ambos son carismáticos y aman a la gente. El 9 tiene una veta más dramática y el 3 más ligera. Una relación llena de expresión y generosidad.", trabajo: "Ideal para las artes, el teatro o causas humanitarias. Ambos son inspiradores y saben cómo motivar a la gente. Su trabajo tiene que tener un propósito elevado.", amistad: "Una amistad muy inspiradora. Ambos son idealistas y creativos. Se apoyan en sus sueños y se animan a expresarse sin miedo." },
+        '4-4': { amor: "La estabilidad personificada. Dos constructores que valoran el trabajo, el orden y la seguridad por encima de todo. Una relación muy predecible y sólida. El riesgo es caer en la rutina.", trabajo: "La dupla más trabajadora y confiable que existe. Son metódicos, organizados y orientados al detalle. Perfectos para contabilidad, ingeniería o gestión de proyectos.", amistad: "Una amistad basada en la lealtad y la confianza. No son de grandes fiestas, pero sí de ayudarse en la mudanza. Son amigos en los que se puede confiar ciegamente." },
+        '4-5': { amor: "El ancla y el viento. El 4 busca raíces y el 5 alas. Es una de las combinaciones más desafiantes. Requiere un amor inmenso y un gran respeto por sus diferencias fundamentales.", trabajo: "Puede funcionar si el 5 es el vendedor que viaja y el 4 el que administra la base de operaciones. Necesitan roles que no se superpongan para no chocar constantemente.", amistad: "Una amistad que rara vez dura si no hay un propósito común. Sus estilos de vida son demasiado diferentes. El 4 se estresa con el caos del 5, y el 5 se aburre con la rutina del 4." },
+        '4-6': { amor: "La base del hogar. Ambos son responsables, leales y orientados a la familia. El 4 construye la casa y el 6 la convierte en un hogar. Una de las uniones más estables y duraderas.", trabajo: "Muy responsables y dedicados. El 4 se enfoca en la tarea y el 6 en el equipo. Juntos, se aseguran de que el trabajo se haga bien y de que todos estén contentos.", amistad: "Una amistad muy sólida y tradicional. Comparten valores y un profundo sentido del deber. Son amigos de toda la vida." },
+        '4-7': { amor: "El constructor y el sabio. Ambos son serios, analíticos y necesitan su espacio. No es una relación de grandes pasiones, sino de profundo respeto intelectual y lealtad.", trabajo: "El 7 es el experto técnico y el 4 el gerente de proyecto. Ideal para campos especializados como la informática o la investigación. Son una dupla de alta calidad y precisión.", amistad: "Una amistad de mentes. Disfrutan de actividades tranquilas como el ajrez o los clubes de lectura. Su conexión es más mental que social." },
+        '4-8': { amor: "Los constructores de imperios. Ambos son trabajadores, ambiciosos y con los pies en la tierra. Juntos pueden lograr una gran seguridad y éxito material. La relación es más práctica que romántica.", trabajo: "La combinación perfecta para un negocio. El 4 organiza y administra, el 8 lidera y expande. Son una máquina de hacer dinero y construir estructuras sólidas.", amistad: "Una amistad basada en el respeto por el trabajo duro y la ambición. Pueden ser socios de negocios o apoyarse mutuamente en sus carreras. Son muy leales." },
+        '4-9': { amor: "El práctico y el soñador. El 4 se enfoca en el aquí y ahora, y el 9 en las grandes causas. El 9 puede parecerle poco práctico al 4, y el 4 poco inspirado al 9. Un reto de perspectivas.", trabajo: "El 9 tiene la visión humanitaria y el 4 crea la estructura para que la fundación funcione. Pueden lograr grandes cosas si el 4 no limita los sueños del 9 con su pragmatismo.", amistad: "Una amistad de opuestos. El 9 abre la mente del 4 a nuevas ideas y el 4 ayuda al 9 a mantener los pies en la tierra. Pueden aprender mucho el uno del otro." },
+        '5-5': { amor: "Libertad al cuadrado. Dos almas gemelas en su necesidad de aventura, cambio y emoción. La relación es un viaje constante. El desafío es que alguno de los dos decida echar raíces.", trabajo: "Un equipo caóticamente brillante. Ideal para trabajos que no tengan rutina. Son excelentes para resolver problemas sobre la marcha. La planificación a largo plazo no es lo suyo.", amistad: "Los mejores compañeros de aventuras. Su amistad es una sucesión de anécdotas increíbles. Se dan la libertad que ambos necesitan." },
+        '5-6': { amor: "El aventurero y el guardián. El 5 quiere explorar el mundo y el 6 quiere crear un hogar. Una combinación muy difícil que requiere un gran compromiso y sacrificio de ambas partes.", trabajo: "El 5 es el creativo que rompe las reglas y el 6 el que se preocupa por la satisfacción del cliente. Pueden chocar, a menos que el 6 aprecie la innovación del 5.", amistad: "Una amistad que puede ser frustrante. El 5 cancela planes a último minuto, lo que hiere los sentimientos del responsable 6. Necesitan mucha tolerancia." },
+        '5-7': { amor: "El explorador del mundo exterior y el explorador del mundo interior. Ambos son buscadores, pero en diferentes planos. Se sienten atraídos por el misterio del otro. Necesitan respetar su mutua necesidad de espacio.", trabajo: "El 7 investiga y el 5 viaja para conseguir la información o vender la idea. Son una buena dupla para periodismo, investigación de campo o consultoría internacional.", amistad: "Una amistad fascinante. El 5 trae historias del mundo y el 7 ofrece perspectivas profundas. Sus conversaciones son estimulantes y abren la mente." },
+        '5-8': { amor: "El arriesgado y el magnate. El 8 busca controlar y el 5 no soporta el control. El 8 quiere construir un imperio y el 5 quiere ser libre. Una relación de poder muy volátil y apasionada.", trabajo: "El 8 es el jefe y el 5 el vendedor estrella que viaja por el mundo. El 8 le da la libertad al 5 siempre y cuando traiga resultados. Puede ser una alianza muy rentable.", amistad: "Una amistad de alto riesgo y alta recompensa. Disfrutan de los lujos y la emoción. El 8 admira la audacia del 5, y el 5 el poder del 8." },
+        '5-9': { amor: "Dos espíritus libres con diferentes enfoques. El 5 busca la libertad personal y el 9 la libertad para todos. Ambos son adaptables y aman a la gente. Una relación muy social y humanitaria.", trabajo: "Ideal para causas sociales, viajes humanitarios o enseñanza. El 9 tiene la visión compasiva y el 5 la habilidad de conectar con gente de todas las culturas.", amistad: "Una amistad fácil y sin ataduras. Ambos son desapegados y entienden la necesidad de cambio. Se encuentran y desencuentran a lo largo de la vida con gran afecto." },
+        '6-6': { amor: "El hogar es donde está el corazón. Dos almas protectoras y amorosas. Su relación se centra en la familia, la belleza y la responsabilidad. El peligro es volverse controladores o mártires.", trabajo: "La dupla del servicio. Ideales para dirigir una escuela, un restaurante familiar o una clínica. Se preocupan genuinamente por el bienestar de sus empleados y clientes.", amistad: "Una amistad de lealtad absoluta. Son como hermanos. Se cuidan, se aconsejan y siempre tienen un plato de comida caliente para el otro." },
+        '6-7': { amor: "El corazón y la mente. El 6 es emocional y expresivo, el 7 es mental y reservado. El 6 puede sentir que el 7 es frío, y el 7 que el 6 es demasiado demandante. Requiere un gran esfuerzo de comunicación.", trabajo: "El 7 es el experto y el 6 el maestro que lo enseña con amor. Ideal para la enseñanza o la terapia. El 7 aporta el conocimiento y el 6 la calidez humana para transmitirlo.", amistad: "Una amistad que puede ser un refugio. El 7 encuentra en el 6 la calidez que le falta, y el 6 la perspectiva objetiva que necesita. Se equilibran si respetan sus diferencias." },
+        '6-8': { amor: "El protector y el proveedor. El 8 construye el imperio y el 6 lo convierte en un hogar lujoso y confortable. Una pareja poderosa y orientada a la familia. El 8 debe valorar el trabajo del 6 en el hogar.", trabajo: "El 8 dirige la empresa y el 6 se encarga de los recursos humanos y el bienestar del equipo. Juntos crean una empresa exitosa y con un gran ambiente laboral.", amistad: "Una amistad de apoyo mutuo. El 8 ofrece protección y seguridad material, y el 6 apoyo emocional y lealtad. Son una combinación muy sólida." },
+        '6-9': { amor: "Dos humanitarios con un corazón enorme. Su amor se extiende más allá de la pareja, hacia la comunidad. Son la pareja que adopta a todos los perros sin hogar. Su amor es compasivo y universal.", trabajo: "La combinación perfecta para una fundación o una ONG. Su trabajo está impulsado por un profundo deseo de servir y hacer del mundo un lugar mejor. Son muy inspiradores.", amistad: "Una amistad basada en la generosidad y la compasión. Siempre están ayudando a alguien o involucrados en una causa social. Se admiran mutuamente por su gran corazón." },
+        '7-7': { amor: "Dos mentes brillantes en su propia burbuja. Una relación de profundo entendimiento intelectual y espiritual. Necesitan mucho espacio y soledad. La comunicación emocional no es su fuerte.", trabajo: "Un 'think tank' de dos personas. Perfectos para investigación, análisis de datos o desarrollo de tecnología. Pueden pasar horas trabajando en silencio, perfectamente sincronizados.", amistad: "Una amistad de almas gemelas intelectuales. Pueden hablar durante horas sobre temas complejos o disfrutar de un silencio cómodo. Se entienden a un nivel que pocos pueden." },
+        '7-8': { amor: "El estratega y el general. El 7 analiza y el 8 actúa. Se sienten atraídos por el poder mental y material del otro. El 7 puede ver al 8 como superficial, y el 8 al 7 como poco práctico.", trabajo: "Una dupla invencible si se respetan. El 7 crea el plan maestro y el 8 lo ejecuta sin piedad. Ideal para finanzas, estrategia militar o grandes corporaciones.", amistad: "Una amistad basada en el respeto por la inteligencia y el poder. No es una amistad cálida, sino una alianza estratégica. Se admiran mutuamente." },
+        '7-9': { amor: "El sabio y el gurú. Una conexión espiritual y filosófica muy profunda. Ambos son almas viejas que buscan la verdad. Su relación puede ser más platónica que física.", trabajo: "Ideal para la enseñanza superior, la filosofía o la investigación espiritual. El 7 busca el conocimiento y el 9 la sabiduría para compartirla. Juntos pueden ser grandes maestros.", amistad: "Una amistad de maestro y discípulo, donde los roles se intercambian constantemente. Sus conversaciones pueden cambiar la vida del otro. Una conexión muy profunda." },
+        '8-8': { amor: "Doble dosis de poder y ambición. Una 'power couple' en toda regla. Juntos pueden conquistar el mundo. El desafío es no competir entre sí y recordar ser una pareja, no solo socios.", trabajo: "Una sociedad de negocios destinada al éxito material. Son dos tiburones en el mismo tanque. Funcionan si tienen un objetivo común más grande que sus egos.", amistad: "Una amistad de magnates. Se relacionan en el club de campo y hablan de inversiones. Se respetan y se entienden, pero siempre hay una corriente de competencia." },
+        '8-9': { amor: "El magnate y el filántropo. El 8 crea la fortuna y el 9 le enseña cómo usarla para el bien de la humanidad. Una relación de gran poder y propósito si logran alinear sus valores.", trabajo: "El 8 dirige la corporación y el 9 crea la fundación de la empresa. El 8 genera los recursos y el 9 se asegura de que tengan un impacto positivo. Gran potencial.", amistad: "El 9 puede ser el consejero espiritual del 8. El 9 ayuda al 8 a conectar con su lado más humano, y el 8 ayuda al 9 a ser más efectivo en el mundo material." },
+        '9-9': { amor: "Dos idealistas en un mundo imperfecto. Una relación de profunda compasión, tolerancia y sabiduría. Se entienden a nivel del alma. El desafío es lidiar con las realidades prácticas de la vida.", trabajo: "Perfectos para liderar movimientos humanitarios, espirituales o artísticos. Su trabajo debe tener un propósito elevado para que se sientan realizados. Son líderes inspiradores.", amistad: "Una amistad de almas viejas. Se sienten como si se conocieran de otras vidas. Su conexión es profunda, tolerante y llena de sabiduría." }
+    };
+    const astrologicalEvents = {
+        "2025-03-14": { icon: "💫", name: "Eclipse Lunar Total", desc: "Finales y revelaciones emocionales. Lo que estaba oculto sale a la luz. Es un momento de cierre y liberación." },
+        "2025-03-20": { icon: "⚖️", name: "Equinoccio de Primavera", desc: "El Año Nuevo Astrológico. Un día de equilibrio perfecto entre luz y oscuridad, ideal para iniciar proyectos con energía renovada." },
+        "2025-03-29": { icon: "💫", name: "Eclipse Solar Parcial", desc: "Un poderoso nuevo comienzo. Ideal para plantar intenciones audaces, pero evita tomar decisiones impulsivas. La energía es potente pero caótica." },
+        "2025-04-01": { icon: "⏪", name: "Inicia Mercurio Retrógrado", desc: "Comunicación, tecnología y viajes se complican. Revisa, repara y reconsidera. No es momento de firmar contratos ni empezar proyectos nuevos." },
+        "2025-04-25": { icon: "⏩", name: "Termina Mercurio Retrógrado", desc: "La claridad regresa. Los planes pueden avanzar. Es buen momento para implementar lo que reconsideraste durante el retrógrado." },
+        "2025-06-21": { icon: "☀️", name: "Solsticio de Verano", desc: "El día más largo del año. Un portal de máxima energía solar, perfecto para celebrar la vida, la abundancia y la autoexpresión." },
+        "2025-09-07": { icon: "💫", name: "Eclipse Lunar Total", desc: "Un clímax emocional importante. Prepárate para soltar lo que ya no te sirve y ver culminar situaciones de los últimos 6 meses." },
+        "2025-09-21": { icon: "💫", name: "Eclipse Solar Parcial", desc: "Nuevas oportunidades en relaciones y asociaciones. Un buen momento para iniciar colaboraciones, pero con cautela y claridad." },
+        "2025-09-22": { icon: "⚖️", name: "Equinoccio de Otoño", desc: "Un tiempo de balance y gratitud. La energía se enfoca en cosechar lo sembrado y prepararse para un ciclo de introspección." },
+        "2025-12-21": { icon: "❄️", name: "Solsticio de Invierno", desc: "La noche más larga del año. Un portal energético para la introspección, el descanso y el renacimiento de la luz interior." },
+    };
+    const moonPhaseInfo = {
+        'Luna Nueva': { reseña: "Nuevos Comienzos. La energía es perfecta para la introspección y sembrar intenciones claras para el futuro. Planifica en calma, no actúes aún." },
+        'Cuarto Creciente': { reseña: "Acción y Crecimiento. Sientes una oleada de motivación. Es el momento ideal para dar los primeros pasos hacia tus metas y superar obstáculos." },
+        'Luna Llena': { reseña: "Culminación y Revelación. Un pico de energía. Las emociones se intensifican. Celebra tus logros y libera lo que ya no te sirve." },
+        'Cuarto Menguante': { reseña: "Liberación y Reevaluación. Tiempo para soltar, reflexionar y hacer ajustes. Libera viejos hábitos y crea espacio para lo nuevo." }
+    };
+    const letterValues = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 1, k: 2, l: 3, m: 4, n: 5, o: 6, p: 7, q: 8, r: 9, s: 1, t: 2, u: 3, v: 4, w: 5, x: 6, y: 7, z: 8 };
+    let logoBase64 = '';
+
+    // ---------------------------------------------------------------------------------
+    // 2. FUNCIONES DE CÁLCULO DE NUMEROLOGÍA
+    // ---------------------------------------------------------------------------------
+    function reducirNumero(n, preserveMasters = true) {
+        if (preserveMasters && (n === 11 || n === 22)) return n;
+        let sum = String(n).split('').reduce((acc, digit) => acc + parseInt(digit, 10), 0);
+        if (sum > 9 && (!preserveMasters || (sum !== 11 && sum !== 22))) {
+            return reducirNumero(sum, preserveMasters);
+        }
+        return sum;
+    }
+
+    function calculateNameNumber(name, type) {
+        const vowels = 'aeiouáéíóú';
+        let sum = 0;
+        for (let char of name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")) {
+            if (type === 'vowels' && vowels.includes(char)) {
+                sum += letterValues[char] || 0;
+            } else if (type === 'consonants' && !vowels.includes(char) && letterValues[char]) {
+                sum += letterValues[char] || 0;
+            }
+        }
+        return reducirNumero(sum);
+    }
+
+    function calculateKarmaNumbers(name) {
+        const presentNumbers = new Set();
+        for (let char of name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")) {
+            if (letterValues[char]) {
+                presentNumbers.add(letterValues[char]);
+            }
+        }
+        const karma = [];
+        for (let i = 1; i <= 9; i++) {
+            if (!presentNumbers.has(i)) {
+                karma.push(i);
+            }
+        }
+        return karma.length > 0 ? karma : ["Ninguno"];
+    }
+
+    function getMoonPhase(date) {
+        const Y = date.getFullYear();
+        let M = date.getMonth() + 1;
+        const D = date.getDate();
+        let c = 0, e = 0, jd = 0, b = 0;
+        let yearForCalc = Y;
+
+        if (M < 3) {
+            yearForCalc--;
+            M += 12;
+        }
+        
+        c = 365.25 * yearForCalc;
+        e = 30.6 * M;
+        jd = c + e + D - 694039.09;
+        jd /= 29.5305882;
+        b = parseInt(jd);
+        jd -= b;
+        b = Math.round(jd * 8);
+        if (b >= 8) b = 0;
+
+        const phases = [
+            {icon: "🌑", name: "Luna Nueva"},
+            {icon: "🌒", name: "Cuarto Creciente"},
+            {icon: "🌓", name: "Cuarto Creciente"},
+            {icon: "🌔", name: "Cuarto Creciente"},
+            {icon: "🌕", name: "Luna Llena"},
+            {icon: "🌖", name: "Cuarto Menguante"},
+            {icon: "🌗", name: "Cuarto Menguante"},
+            {icon: "🌘", name: "Cuarto Menguante"}
+        ];
+        return phases[b];
+    }
+    
+    async function getLogoBase64() {
+        if (logoBase64) return logoBase64;
+        try {
+            const response = await fetch('https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png');
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    logoBase64 = reader.result;
+                    resolve(logoBase64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            console.error("Error al cargar el logo:", error);
+            return null;
+        }
+    }
+
+
+    // ---------------------------------------------------------------------------------
+    // 3. LÓGICA PRINCIPAL DE LA APLICACIÓN
+    // ---------------------------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- INICIALIZACIÓN DE FIREBASE ---
+        // PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE
+        const firebaseConfig = {
+          apiKey: "AIzaSyDUQc_DISkiXA5OFEEBDhKwYiYmUj98Eh4",
+          authDomain: "numerologia-sendero11.firebaseapp.com",
+          projectId: "numerologia-sendero11",
+          storageBucket: "numerologia-sendero11.firebasestorage.app",
+          messagingSenderId: "1001480790018",
+          appId: "1:1001480790018:web:fa17a029b86ad24638071b",
+          measurementId: "G-ZLB0DYTJBJ"
+        };
+        
+        let db;
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.firestore();
+        } catch (e) {
+            console.error("Error al inicializar Firebase. Asegúrate de pegar tu 'firebaseConfig' correctamente.", e);
+            alert("Error de configuración de la base de datos. Contacta al administrador.");
+        }
+
+        getLogoBase64();
+        
+        particlesJS("particles-js", {
+            "particles": { "number": { "value": 25, "density": { "enable": true, "value_area": 900 } }, "color": { "value": "#ffffff" }, "shape": { "type": "circle" }, "opacity": { "value": 0.4, "random": false }, "size": { "value": 3, "random": true }, "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.3, "width": 1 }, "move": { "enable": true, "speed": 1, "direction": "none", "out_mode": "out" } },
+            "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": false } } },
+            "retina_detect": true
+        });
+
+        const portalSection = document.getElementById('portal');
+        const portalContent = document.getElementById('portal-content');
+        const resultsSection = document.getElementById('results');
+        const adminPanel = document.getElementById('admin-panel');
+        const generalModal = document.getElementById('general-modal');
+        const modalContent = document.getElementById('modal-content');
+
+        let currentUserData = {};
+        let currentDate = new Date();
+        
+        const params = new URLSearchParams(window.location.search);
+        const data = params.get('data');
+        const adminKey = params.get('admin');
+
+        if (data) {
+            try {
+                const decodedData = JSON.parse(atob(data));
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const expirationDate = new Date(decodedData.validUntil);
+                
+                if (decodedData.validUntil && today > expirationDate) {
+                    portalContent.innerHTML = `
+                        <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-48 h-48 mb-8 mx-auto">
+                        <h2 class="main-title text-4xl text-red-400 mb-4">Acceso Expirado</h2>
+                        <p class="text-lg text-gray-300">El enlace para tu reporte personalizado ha expirado.</p>
+                        <p class="text-sm text-gray-500 mt-2">Por favor, contacta a Sendero 11 para renovar tu acceso.</p>`;
+                    portalSection.classList.add('flex');
+                } else {
+                    runCalculation(decodedData.name, decodedData.birthdate, decodedData.duration, decodedData.startDate, false); // false = no es admin
+                }
+            } catch (e) {
+                portalContent.innerHTML = `
+                    <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-48 h-48 mb-8 mx-auto">
+                    <h2 class="main-title text-4xl text-red-400 mb-4">Enlace Inválido</h2>
+                    <p class="text-lg text-gray-300">El enlace que has usado no es correcto o está dañado.</p>`;
+                portalSection.classList.add('flex');
+            }
+        } else if (adminKey === 'sendero11') {
+            // MODO ADMIN
+            portalContent.innerHTML = `
+                <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-48 h-48 mb-8 mx-auto">
+                <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">Modo Administrador: Ingresa los datos del cliente para generar su reporte y enlace.</p>
+                <form id="numerology-form" class="w-full max-w-lg space-y-4 mx-auto">
+                    <div>
+                        <label for="name" class="sr-only">Nombre completo del cliente</label>
+                        <input type="text" id="name" placeholder="Nombre completo del cliente" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
+                    </div>
+                    <div>
+                        <label for="birthdate" class="sr-only">Fecha de nacimiento del cliente</label>
+                        <input type="date" id="birthdate" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
+                    </div>
+                    <button type="submit" class="w-full p-3 bg-cyan-500 text-white font-bold rounded-lg text-lg glow-button">
+                        Generar Reporte
+                    </button>
+                </form>`;
+            portalSection.classList.add('flex');
+            
+            const adminForm = document.getElementById('numerology-form');
+            if (adminForm) {
+                adminForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('name').value;
+                    const birthdateStr = document.getElementById('birthdate').value;
+                    if (name && birthdateStr) {
+                       runCalculation(name, birthdateStr, 99, new Date().toISOString().split('T')[0], true); // true = es admin
+                    }
+                });
+            }
+        } else {
+            // MODO PÚBLICO BLOQUEADO
+            portalContent.innerHTML = `
+                <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-48 h-48 mb-8 mx-auto">
+                <h2 class="main-title text-4xl text-red-400 mb-4">Acceso no Autorizado</h2>
+                <p class="text-lg text-gray-300">Esta herramienta es accesible únicamente a través de un enlace personalizado.</p>
+                <a href="./Lindex.html" class="mt-8 inline-block px-8 py-3 bg-cyan-500 text-white font-bold rounded-lg glow-button">
+                    Conoce más sobre Sendero 11
+                </a>`;
+            portalSection.classList.add('flex');
+        }
+        
+        function runCalculation(name, birthdateStr, duration, startDate, isAdminView) {
+            const birthdate = new Date(birthdateStr + 'T00:00:00');
+            const diaNac = birthdate.getDate();
+            const mesNac = birthdate.getMonth() + 1;
+            const anoNac = birthdate.getFullYear();
+            const anoNacStr = String(anoNac);
+            
+            const numeroDiaNacimiento = reducirNumero(diaNac, false);
+            const caminoVida = reducirNumero(diaNac + mesNac + reducirNumero(anoNac, false));
+            const alma = calculateNameNumber(name, 'vowels');
+            const personalidad = calculateNameNumber(name, 'consonants');
+            const destino = reducirNumero(alma + personalidad);
+            const regalo = reducirNumero(parseInt(anoNacStr.slice(-2)[0]) + parseInt(anoNacStr.slice(-2)[1]));
+            const karma = calculateKarmaNumbers(name);
+
+            const hoy = new Date();
+            const anoPlanetario = (hoy.getFullYear() > birthdate.getFullYear() || (hoy.getMonth() > birthdate.getMonth() || (hoy.getMonth() === birthdate.getMonth() && hoy.getDate() >= birthdate.getDate()))) ? hoy.getFullYear() : hoy.getFullYear() - 1;
+            const anoPersonal = reducirNumero(diaNac + mesNac + anoPlanetario);
+
+            currentUserData = { name, birthdate, diaNac, numeroDiaNacimiento, caminoVida, alma, personalidad, destino, regalo, karma, anoPersonal, duration, startDate: new Date(startDate) };
+            
+            currentDate = new Date(currentUserData.startDate);
+
+            document.getElementById('user-name-title').textContent = name.split(' ')[0];
+            
+            portalSection.style.opacity = 0;
+            setTimeout(() => {
+                portalSection.classList.add('hidden');
+                resultsSection.classList.remove('hidden');
+                displayResults();
+                document.getElementById('calendar-title').textContent = `Calendario Numerológico para ${name.split(' ')[0]}`;
+                document.getElementById('calendar-subtitle').textContent = `Nacimiento: ${birthdate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+                buildCalendar(currentDate);
+                setupPdfButtons(duration);
+
+                if (isAdminView) {
+                    adminPanel.classList.remove('hidden');
+                    populateAdminDurationSelect();
+                    displayAnalytics();
+                } else {
+                    adminPanel.classList.add('hidden');
+                }
+
+                setTimeout(() => {
+                    resultsSection.style.opacity = 1;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 50);
+            }, 500);
+        }
+
+        function displayResults() {
+            const { caminoVida, alma, personalidad, regalo, karma, anoPersonal } = currentUserData;
+            
+            const createCardContent = (title, number, subtitle, color) => `
+                <h3 class="font-bold text-xl text-cyan-300 pt-2">${title}</h3>
+                <div class="flex-grow flex items-center justify-center">
+                    <p class="text-7xl font-bold rounded-full w-36 h-36 flex items-center justify-center" style="color: ${color}; text-shadow: 0 0 12px ${color}80; background: radial-gradient(circle, ${color}20 0%, transparent 65%);">${number}</p>
+                </div>
+                <p class="text-xs text-gray-400 pb-2">${subtitle}</p>`;
+
+            const createKarmaCardContent = (title, karmaList, subtitle) => {
+                const karmaHtml = karmaList[0] === "Ninguno" 
+                    ? `<span style="color: #FFFFFF;">${karmaList[0]}</span>`
+                    : karmaList.map(k => {
+                        const kColor = infoNumeros.diaPersonal[k]?.hex || '#FFFFFF';
+                        return `<span style="color: ${kColor}; text-shadow: 0 0 8px ${kColor}60;">${k}</span>`;
+                    }).join(', ');
+                return `
+                    <h3 class="font-bold text-xl text-cyan-300 pt-2">${title}</h3>
+                    <div class="flex-grow flex items-center justify-center">
+                        <p class="text-5xl font-bold">${karmaHtml}</p>
+                    </div>
+                    <p class="text-xs text-gray-400 pb-2">${subtitle}</p>`;
+            };
+
+            document.getElementById('camino-vida-card').innerHTML = createCardContent('Camino de Vida', caminoVida, 'Tu misión y lecciones.', infoNumeros.diaPersonal[caminoVida]?.hex || '#FFFFFF');
+            document.getElementById('alma-card').innerHTML = createCardContent('Alma', alma, 'Tus deseos internos.', infoNumeros.diaPersonal[alma]?.hex || '#FFFFFF');
+            document.getElementById('personalidad-card').innerHTML = createCardContent('Personalidad', personalidad, 'Cómo te ven los demás.', infoNumeros.diaPersonal[personalidad]?.hex || '#FFFFFF');
+            document.getElementById('regalo-card').innerHTML = createCardContent('Regalo Divino', regalo, 'Tu don natural.', infoNumeros.diaPersonal[regalo]?.hex || '#FFFFFF');
+            document.getElementById('ano-personal-card').innerHTML = createCardContent('Año Personal', anoPersonal, 'Tu energía para este año.', infoNumeros.diaPersonal[anoPersonal]?.hex || '#FFFFFF');
+            document.getElementById('karma-card').innerHTML = createKarmaCardContent('Karma', karma, 'Lecciones a aprender.');
+
+            document.getElementById('camino-vida-card').onclick = () => showCardDetails('caminoVida');
+            document.getElementById('alma-card').onclick = () => showCardDetails('alma');
+            document.getElementById('personalidad-card').onclick = () => showCardDetails('personalidad');
+            document.getElementById('regalo-card').onclick = () => showCardDetails('regalo');
+            document.getElementById('karma-card').onclick = () => showCardDetails('karma');
+            document.getElementById('ano-personal-card').onclick = () => showCardDetails('anoPersonal');
+        }
+
+        function showCardDetails(type) {
+            const { caminoVida, alma, personalidad, destino, regalo, karma, anoPersonal } = currentUserData;
+            let title = '';
+            let content = '';
+
+            switch (type) {
+                case 'caminoVida':
+                    title = `Camino de Vida ${caminoVida}`;
+                    content = `<p class="text-sm mb-4">${infoNumeros.caminoVida[caminoVida]}</p>`;
+                    break;
+                case 'alma':
+                    title = `Número de Alma ${alma}`;
+                    content = `<p class="text-sm">${infoNumeros.alma[alma]}</p>`;
+                    break;
+                case 'personalidad':
+                    title = `Número de Personalidad ${personalidad}`;
+                    content = `<p class="text-sm mb-4">${infoNumeros.personalidad[personalidad]}</p>
+                               <hr class="my-3 border-white/20">
+                               <p class="font-bold text-cyan-300">Tu número de Destino (Alma + Personalidad) es ${destino}.</p>`;
+                    break;
+                case 'regalo':
+                     title = `Regalo Divino ${regalo}`;
+                    content = `<p class="text-sm">${infoNumeros.regalo[regalo]}</p>`;
+                    break;
+                case 'karma':
+                    const karmaText = karma[0] === "Ninguno" ? `<p class="text-sm">${infoNumeros.karma["Ninguno"]}</p>` : karma.map(k => `<p class="text-sm text-left"><strong class="text-cyan-300">${k}:</strong> ${infoNumeros.karma[k]}</p>`).join('');
+                    title = `Lecciones Kármicas`;
+                    content = `<div class="space-y-2">${karmaText}</div>`;
+                    break;
+                case 'anoPersonal':
+                    const anoInfo = infoNumeros.añoPersonal[anoPersonal];
+                    title = `Año Personal ${anoPersonal}`;
+                    content = `<h3 class="font-bold text-2xl mb-2" style="color:${anoInfo.color.toLowerCase()}">${anoInfo.palabra}</h3>
+                               <p class="text-sm"><strong>Joya:</strong> ${anoInfo.joya}</p>
+                               <p class="text-sm mt-4">${anoInfo.desc}</p>`;
+                    break;
+            }
+
+            modalContent.innerHTML = `<h3 class="main-title text-3xl font-bold mb-4">${title}</h3>
+                                      <div class="text-gray-300">${content}</div>
+                                      <button id="close-modal" class="mt-6 w-full p-2 bg-cyan-500 text-white font-bold rounded-lg glow-button">Cerrar</button>`;
+            generalModal.classList.remove('hidden');
+        }
+
+        function buildCalendar(date) {
+            const { anoPersonal, numeroDiaNacimiento, duration, startDate } = currentUserData;
+            const month = date.getMonth();
+            const year = date.getFullYear();
+
+            document.getElementById('month-year').textContent = date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase());
+            const calendarGrid = document.getElementById('calendar-grid');
+            calendarGrid.innerHTML = '';
+            const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            diasSemana.forEach(dia => { calendarGrid.innerHTML += `<div class="text-center font-bold text-cyan-300 text-xs sm:text-base">${dia}</div>`; });
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let i = 0; i < firstDayOfMonth; i++) { calendarGrid.innerHTML += `<div></div>`; }
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const currentDayDate = new Date(year, month, i);
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const astroEvent = astrologicalEvents[dateString];
+
+                const diaDeLaSemana = diasSemana[currentDayDate.getDay()];
+                const periodosDiaNac = infoNumeros.periodos[numeroDiaNacimiento] || { favorables: [] };
+                const isFavorable = periodosDiaNac.favorables.includes(diaDeLaSemana);
+                
+                const mesPersonal = reducirNumero(anoPersonal + (month + 1), false);
+                const diaPersonal = reducirNumero(mesPersonal + i);
+                const diaInfo = infoNumeros.diaPersonal[diaPersonal];
+                
+                let dayClasses = `glassmorphism rounded-lg text-center cursor-pointer flex flex-col items-center justify-center aspect-square p-1 transition-transform hover:scale-110`;
+                if (new Date().toDateString() === currentDayDate.toDateString()) dayClasses += ' day-pulse border-2 border-cyan-400';
+                
+                const moonPhase = getMoonPhase(currentDayDate);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = dayClasses;
+                dayElement.style.border = `1px solid ${diaInfo.hex}55`;
+                
+                dayElement.innerHTML = `<span class="text-lg sm:text-2xl font-bold" style="color: white; text-shadow: 0 0 5px black;">${i}</span><span class="text-xs sm:text-sm font-bold" style="color: ${diaInfo.hex};">${diaPersonal}</span><div class="flex text-xs mt-1 gap-1 items-center"><span>${moonPhase.icon}</span>${astroEvent ? `<span>${astroEvent.icon}</span>` : ''}${isFavorable ? '<span class="text-yellow-300">⭐</span>' : ''}</div>`;
+                dayElement.onclick = () => showDayDetails(currentDayDate);
+                calendarGrid.appendChild(dayElement);
+            }
+
+            const nextMonthBtn = document.getElementById('next-month');
+            const prevMonthBtn = document.getElementById('prev-month');
+            
+            const currentMonthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+            const startMonthStart = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+
+            const endMonth = new Date(startDate);
+            endMonth.setMonth(startDate.getMonth() + duration - 1);
+            const endMonthStart = new Date(endMonth.getFullYear(), endMonth.getMonth(), 1);
+
+            if (duration !== 99 && currentMonthStart.getTime() >= endMonthStart.getTime()) {
+                nextMonthBtn.disabled = true;
+                nextMonthBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                nextMonthBtn.disabled = false;
+                nextMonthBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (currentMonthStart.getTime() <= startMonthStart.getTime()) {
+                prevMonthBtn.disabled = true;
+                prevMonthBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                prevMonthBtn.disabled = false;
+                prevMonthBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function showDayDetails(date) {
+            const { anoPersonal } = currentUserData;
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            const day = date.getDate();
+
+            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const astroEvent = astrologicalEvents[dateString];
+
+            const mesPersonal = reducirNumero(anoPersonal + (month + 1), false);
+            const diaPersonal = reducirNumero(mesPersonal + day);
+            const diaInfo = infoNumeros.diaPersonal[diaPersonal];
+            const moonPhase = getMoonPhase(date);
+            
+            let astroEventHtml = '';
+            if (astroEvent) {
+                astroEventHtml = `
+                <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-red-400 mb-1">${astroEvent.icon} Evento Astrológico: ${astroEvent.name}</h4>
+                    <p class="text-sm pl-6">${astroEvent.desc}</p>
+                </div>`;
+            }
+
+            modalContent.innerHTML = `
+                <p class="text-xl font-bold mb-2">${date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div class="mb-4">
+                    <p class="text-6xl font-bold" style="color:${diaInfo.hex}">${diaPersonal}</p>
+                    <p class="text-xl font-bold" style="color:${diaInfo.hex}">Día ${diaInfo.color}</p>
+                </div>
+                ${astroEventHtml}
+                <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-gray-300 mb-1">${moonPhase.icon} Energía Lunar: ${moonPhase.name}</h4>
+                    <p class="text-sm pl-6">${moonPhaseInfo[moonPhase.name].reseña}</p>
+                </div>
+                <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-yellow-300 mb-1 flex items-center"><span class="w-4 h-4 rounded-full mr-2 border border-white/20" style="background-color:${diaInfo.hex};"></span>Vibración de Color</h4>
+                    <p class="text-sm pl-6">Viste de <strong>${diaInfo.ropa.color}</strong> para ${diaInfo.ropa.frase}</p>
+                </div>
+                <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-cyan-300 mb-1">💡 Consejo del Día</h4>
+                    <p class="text-sm pl-6">${diaInfo.consejo}</p>
+                </div>
+                <div class="glassmorphism rounded-lg p-3 my-2 text-left">
+                    <h4 class="font-bold text-purple-300 mb-1">✨ Afirmación del Día</h4>
+                    <p class="text-sm italic pl-6">"${diaInfo.afirmacion}"</p>
+                </div>
+                <button id="close-modal" class="mt-6 w-full p-2 bg-cyan-500 text-white font-bold rounded-lg glow-button">Cerrar</button>`;
+            
+            generalModal.classList.remove('hidden');
+        }
+        
+        function setupPdfButtons(duration) {
+            const pdfButtonsContainer = document.getElementById('pdf-range-buttons');
+            const buttons = pdfButtonsContainer.querySelectorAll('.pdf-range-button');
+            let highestAvailableButton = null;
+
+            buttons.forEach(button => {
+                const months = parseInt(button.dataset.months);
+                button.classList.remove('bg-cyan-500');
+                if (duration !== 99 && months > duration) {
+                    button.style.display = 'none';
+                } else {
+                    button.style.display = 'inline-block';
+                    highestAvailableButton = button;
+                }
+            });
+
+            if (highestAvailableButton) {
+                highestAvailableButton.classList.add('bg-cyan-500');
+                selectedMonthsForPdf = parseInt(highestAvailableButton.dataset.months);
+            }
+        }
+
+        let selectedMonthsForPdf = 1;
+        const pdfRangeButtons = document.querySelectorAll('.pdf-range-button');
+        pdfRangeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                pdfRangeButtons.forEach(btn => btn.classList.remove('bg-cyan-500'));
+                button.classList.add('bg-cyan-500');
+                selectedMonthsForPdf = parseInt(button.dataset.months);
+            });
+        });
+        
+        document.getElementById('generate-pdf-btn').addEventListener('click', async () => {
+            const loader = document.getElementById('pdf-loader');
+            const progressBar = document.getElementById('pdf-progress-bar');
+            loader.classList.remove('hidden');
+            progressBar.style.width = '0%';
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'pt', 'letter');
+            const { name, birthdate, caminoVida, alma, personalidad, destino, regalo, karma, anoPersonal } = currentUserData;
+            const logoData = await getLogoBase64();
+
+            // --- FUNCIONES AUXILIARES PARA DIBUJAR EN PDF ---
+            let yPos = 0;
+            const margin = 60;
+            const maxWidth = pdf.internal.pageSize.getWidth() - margin * 2;
+
+            const addPageWithHeader = (isFirstPage = false) => {
+                if (!isFirstPage) {
+                    pdf.addPage();
+                }
+                pdf.setFillColor(10, 10, 26);
+                pdf.rect(0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 'F');
+                if (logoData) {
+                    pdf.addImage(logoData, 'PNG', margin, margin - 30, 40, 40);
+                }
+                pdf.setFont('Inter', 'normal');
+                pdf.setFontSize(9);
+                pdf.setTextColor(150, 150, 150);
+                pdf.text('Reporte Personalizado para ' + name, pdf.internal.pageSize.getWidth() - margin, margin - 20, { align: 'right' });
+                yPos = margin + 30;
+            };
+
+            const checkPageBreak = (height) => {
+                if (yPos + height > pdf.internal.pageSize.getHeight() - margin) {
+                    addPageWithHeader();
+                }
+            };
+
+            const drawTitle = (text, size, color, y) => {
+                pdf.setFont('Playfair Display', 'bold');
+                pdf.setFontSize(size);
+                pdf.setTextColor(color[0], color[1], color[2]);
+                pdf.text(text, pdf.internal.pageSize.getWidth() / 2, y, { align: 'center' });
+            };
+
+            const drawSubTitle = (text, size, color) => {
+                checkPageBreak(size * 2);
+                pdf.setFont('Playfair Display', 'bold');
+                pdf.setFontSize(size);
+                pdf.setTextColor(color[0], color[1], color[2]);
+                pdf.text(text, margin, yPos);
+                yPos += size * 1.5;
+            };
+
+            const drawBodyText = (text, isListItem = false) => {
+                pdf.setFont('Inter', 'normal');
+                pdf.setFontSize(11);
+                pdf.setTextColor(224, 224, 224);
+                const prefix = isListItem ? '• ' : '';
+                const lines = pdf.splitTextToSize(prefix + text, maxWidth - (isListItem ? 10 : 0));
+                checkPageBreak(lines.length * 12 + 15);
+                pdf.text(lines, margin + (isListItem ? 10 : 0), yPos);
+                yPos += lines.length * 12 + (isListItem ? 5 : 15);
+            };
+            
+            const drawDivider = () => {
+                checkPageBreak(20);
+                pdf.setDrawColor(0, 191, 255, 0.3);
+                pdf.setLineWidth(0.5);
+                pdf.line(margin, yPos, pdf.internal.pageSize.getWidth() - margin, yPos);
+                yPos += 20;
+            };
+
+            // --- INICIO DE LA CREACIÓN DEL PDF ---
+            pdf.setFillColor(10, 10, 26);
+            pdf.rect(0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 'F');
+            if (logoData) {
+                pdf.addImage(logoData, 'PNG', pdf.internal.pageSize.getWidth() / 2 - 50, 120, 100, 100);
+            }
+            drawTitle("Tu Códice Numerológico Personal", 32, [255, 255, 255], 280);
+            drawTitle("Preparado para:", 14, [224, 224, 224], 360);
+            drawTitle(name, 24, [0, 191, 255], 400);
+            drawTitle(birthdate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }), 16, [224, 224, 224], 430);
+            drawTitle("Sendero 11", 12, [224, 224, 224], pdf.internal.pageSize.getHeight() - margin);
+            
+            progressBar.style.width = '10%';
+
+            // PÁGINA 2: INTRODUCCIÓN
+            addPageWithHeader();
+            drawSubTitle("Una Guía a Tu Universo Interior", 18, [0, 191, 255]);
+            drawBodyText("Gracias por confiar en Sendero 11 para explorar tu mapa numerológico. Este reporte ha sido generado especialmente para ti y es una herramienta poderosa para tu autoconocimiento y crecimiento.");
+            drawBodyText("La numerología es un lenguaje sagrado que nos enseña que todo en el universo vibra con una frecuencia específica, y los números son el código para entender estas vibraciones. Desde tu fecha de nacimiento hasta tu nombre completo, cada número en tu vida tiene un significado profundo que revela tus talentos, desafíos y el propósito de tu alma. Al entender tu códice personal, puedes navegar tu vida con mayor claridad, propósito y confianza.");
+            drawDivider();
+            
+            // PÁGINAS SIGUIENTES: REPORTE DETALLADO
+            drawSubTitle(`Camino de Vida: ${caminoVida}`, 18, [0, 191, 255]);
+            drawBodyText(infoNumeros.caminoVida[caminoVida]);
+            drawDivider();
+
+            drawSubTitle(`Número de Alma: ${alma}`, 18, [0, 191, 255]);
+            drawBodyText(infoNumeros.alma[alma]);
+            drawDivider();
+
+            drawSubTitle(`Número de Personalidad: ${personalidad}`, 18, [0, 191, 255]);
+            drawBodyText(infoNumeros.personalidad[personalidad]);
+            drawBodyText(`La suma de tu Alma (${alma}) y tu Personalidad (${personalidad}) revela tu Número de Destino: ${destino}. Este número representa la misión integrada que vienes a cumplir, combinando tus deseos internos con la forma en que te proyectas al mundo.`);
+            drawDivider();
+
+            drawSubTitle(`Regalo Divino: ${regalo}`, 18, [0, 191, 255]);
+            drawBodyText(infoNumeros.regalo[regalo]);
+            drawDivider();
+
+            drawSubTitle('Lecciones Kármicas', 18, [0, 191, 255]);
+            if (karma[0] === "Ninguno") {
+                drawBodyText(infoNumeros.karma["Ninguno"]);
+            } else {
+                drawBodyText("Estas son las áreas en las que vienes a trabajar en esta vida, basadas en las vibraciones numéricas ausentes en tu nombre:");
+                karma.forEach(k => {
+                    drawBodyText(`Karma ${k}: ${infoNumeros.karma[k]}`, true);
+                });
+            }
+            drawDivider();
+            
+            const anoInfo = infoNumeros.añoPersonal[anoPersonal];
+            drawSubTitle(`Año Personal: ${anoPersonal}`, 18, [0, 191, 255]);
+            drawBodyText(`Este año estás vibrando en un año personal ${anoPersonal}. Palabra clave: ${anoInfo.palabra}. Color: ${anoInfo.color}. Joya: ${anoInfo.joya}.`);
+            drawBodyText(anoInfo.desc);
+            
+            progressBar.style.width = '50%';
+
+            // PÁGINAS FINALES: CALENDARIOS
+            for (let i = 0; i < selectedMonthsForPdf; i++) {
+                addPageWithHeader();
+                const calendarDate = new Date(currentUserData.startDate);
+                calendarDate.setDate(1);
+                calendarDate.setMonth(calendarDate.getMonth() + i);
+                
+                const tempCalendarContainer = document.createElement('div');
+                const calendarNode = document.getElementById('calendar-section').cloneNode(true);
+                tempCalendarContainer.appendChild(calendarNode);
+                tempCalendarContainer.style.width = '800px';
+                tempCalendarContainer.style.backgroundColor = '#0a0a1a';
+                tempCalendarContainer.style.color = '#e0e0e0';
+                tempCalendarContainer.style.padding = '20px';
+                document.body.appendChild(tempCalendarContainer);
+                
+                const tempGrid = tempCalendarContainer.querySelector('#calendar-grid');
+                const tempMonthYear = tempCalendarContainer.querySelector('#month-year');
+                
+                const originalDate = new Date(currentDate);
+                buildCalendar(calendarDate);
+                tempGrid.innerHTML = document.getElementById('calendar-grid').innerHTML;
+                tempMonthYear.innerHTML = `Calendario Numerológico para ${calendarDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`;
+                buildCalendar(originalDate);
+
+                const canvas = await html2canvas(tempCalendarContainer, { backgroundColor: '#0a0a1a', scale: 2 });
+                document.body.removeChild(tempCalendarContainer);
+                
+                const imgData = canvas.toDataURL('image/png');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth() - 80;
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                pdf.addImage(imgData, 'PNG', 40, yPos, pdfWidth, pdfHeight);
+
+                progressBar.style.width = `${50 + (50 * (i + 1) / selectedMonthsForPdf)}%`;
+            }
+
+            pdf.save(`Reporte-Sendero-11-${currentUserData.name.split(' ')[0]}.pdf`);
+            loader.classList.add('hidden');
+        });
+
+        document.getElementById('sinergia-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const otherName = document.getElementById('other-name').value;
+            const otherBirthdateValue = document.getElementById('other-birthdate').value;
+            const relationshipType = document.getElementById('relationship-type').value;
+
+            if(!otherName || !otherBirthdateValue) {
+                document.getElementById('sinergia-result').innerHTML = `<p class="text-red-400">Por favor, completa todos los campos.</p>`;
+                return;
+            }
+
+            const otherBirthdate = new Date(otherBirthdateValue + 'T00:00:00');
+            const otherCamino = reducirNumero(otherBirthdate.getDate() + (otherBirthdate.getMonth() + 1) + reducirNumero(otherBirthdate.getFullYear(), false));
+            
+            const myCamino = currentUserData.caminoVida;
+            
+            const key = myCamino < otherCamino ? `${myCamino}-${otherCamino}` : `${otherCamino}-${myCamino}`;
+            
+            const compatibilidad = sinergiaDetallada[key] || { [relationshipType]: "No hay una descripción específica para esta combinación, lo que sugiere una dinámica neutral que pueden moldear con su intención." };
+            const textoResultado = compatibilidad[relationshipType];
+
+            document.getElementById('sinergia-result').innerHTML = `
+                <h4 class="font-bold text-xl text-purple-300">Sinergia de Caminos ${myCamino} y ${otherCamino}</h4>
+                <p class="text-white text-sm mt-2">${textoResultado}</p>`;
+        });
+
+        generalModal.addEventListener('click', (e) => {
+            if (e.target.id === 'general-modal' || e.target.id === 'close-modal' || e.target.parentElement.id === 'close-modal') {
+                generalModal.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('prev-month').addEventListener('click', () => {
+             if (!document.getElementById('prev-month').disabled) {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                buildCalendar(currentDate);
+            }
+        });
+        document.getElementById('next-month').addEventListener('click', () => {
+            if (!document.getElementById('next-month').disabled) {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                buildCalendar(currentDate);
+            }
+        });
+
+        // --- Lógica de Analíticas de Admin ---
+        function populateAdminDurationSelect() {
+            const select = document.getElementById('admin-duration');
+            select.innerHTML = ''; // Limpiar opciones existentes
+            for (let i = 1; i <= 12; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i} Mes(es) de Acceso`;
+                select.appendChild(option);
+            }
+            const permanentOption = document.createElement('option');
+            permanentOption.value = 99;
+            permanentOption.textContent = 'Acceso Permanente';
+            select.appendChild(permanentOption);
+        }
+
+        const generateLinkBtnAdmin = document.getElementById('generate-link-btn');
+        if (generateLinkBtnAdmin) {
+            generateLinkBtnAdmin.addEventListener('click', () => {
+                if (!db) {
+                    alert("La base de datos no está conectada. Revisa tu configuración de Firebase.");
+                    return;
+                }
+                const name = currentUserData.name;
+                const birthdate = currentUserData.birthdate.toISOString().split('T')[0];
+                const duration = parseInt(document.getElementById('admin-duration').value);
+
+                const today = new Date();
+                let expirationDate = new Date(today);
+                if (duration === 99) {
+                    expirationDate = new Date('9999-12-31');
+                } else {
+                    expirationDate.setMonth(today.getMonth() + duration);
+                }
+                
+                const dataToEncode = {
+                    name,
+                    birthdate,
+                    validUntil: expirationDate.toISOString().split('T')[0],
+                    duration,
+                    startDate: new Date().toISOString().split('T')[0]
+                };
+
+                const encodedData = btoa(JSON.stringify(dataToEncode));
+                const baseURL = window.location.origin + '/app.html'; // CORRECCIÓN CLAVE
+                const finalURL = `${baseURL}?data=${encodedData}`;
+
+                document.getElementById('generated-link-container').classList.remove('hidden');
+                document.getElementById('generated-link').value = finalURL;
+
+                // Guardar en Firestore
+                db.collection("clients").add({
+                    name: name,
+                    duration: duration === 99 ? 'Permanente' : `${duration} mes(es)`,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    displayAnalytics();
+                }).catch(err => {
+                    console.error("Error al guardar en Firestore: ", err);
+                    alert("Hubo un error al guardar el registro del cliente.");
+                });
+            });
+        }
+        
+        const copyLinkBtnAdmin = document.getElementById('copy-link-btn');
+        if(copyLinkBtnAdmin) {
+            copyLinkBtnAdmin.addEventListener('click', () => {
+                const linkInput = document.getElementById('generated-link');
+                linkInput.select();
+                document.execCommand('copy');
+                copyLinkBtnAdmin.textContent = '¡Copiado!';
+                setTimeout(() => { copyLinkBtnAdmin.textContent = 'Copiar'; }, 2000);
+            });
+        }
+
+        function displayAnalytics() {
+            if (!db) return;
+            const container = document.getElementById('analytics-table-container');
+            db.collection("clients").orderBy("createdAt", "desc").get().then(querySnapshot => {
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p class="text-gray-400">Aún no has generado ningún enlace.</p>';
+                    return;
+                }
+                let tableHTML = `
+                    <table class="w-full text-sm text-left text-gray-300">
+                        <thead class="text-xs text-cyan-300 uppercase">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Cliente</th>
+                                <th scope="col" class="px-6 py-3">Paquete</th>
+                                <th scope="col" class="px-6 py-3">Fecha de Creación</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                querySnapshot.forEach(doc => {
+                    const client = doc.data();
+                    const date = client.createdAt ? client.createdAt.toDate().toLocaleDateString('es-ES') : 'N/A';
+                    tableHTML += `
+                        <tr class="border-b border-gray-700">
+                            <td class="px-6 py-4">${client.name}</td>
+                            <td class="px-6 py-4">${client.duration}</td>
+                            <td class="px-6 py-4">${date}</td>
+                        </tr>`;
+                });
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+            }).catch(err => {
+                console.error("Error al leer de Firestore: ", err);
+                container.innerHTML = '<p class="text-red-400">No se pudo cargar el registro. Revisa la conexión con la base de datos.</p>';
+            });
+        }
+    });
+    </script>
+</body>
+</html>
+```
+
+### **Paso 2: Las Instrucciones de Uso (Actualizadas)**
+
+El flujo de trabajo ahora es mucho más seguro y profesional:
+
+1.  **Para Trabajar (Modo Administrador):**
+    * Para generar un enlace para un nuevo cliente, **tú** debes ir a una dirección especial que funciona como tu "llave secreta":
+        **`https://numerologia-one.vercel.app/app.html?admin=sendero11`**
+    * Esta URL te mostrará el formulario de entrada. Ingresa los datos de tu cliente y, al calcular, verás el panel de administrador para generar su enlace y registrarlo en la base de datos.
+
+2.  **Para tus Clientes:**
+    * Ellos recibirán el enlace que tú generes (ej. `.../app.html?data=...`). Este enlace les dará acceso directo a su reporte, con el calendario y las opciones de PDF limitadas al paquete que compraron.
+
+3.  **Para el Público General:**
+    * Si alguien intenta entrar a `https://numerologia-one.vercel.app/app.html` sin un enlace válido, ahora verá un mensaje de "Acceso no Autorizado" y un botón que lo llevará a tu página de ventas (`Lindex.html`).
+
+¡Con esto, tu aplicación está completamente protegida y lista para operar de manera profesion
