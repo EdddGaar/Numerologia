@@ -73,7 +73,11 @@
                             <div>
                                 <label for="admin-duration" class="sr-only">Duración del acceso</label>
                                 <select id="admin-duration" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition">
-                                    <!-- Opciones generadas por JS -->
+                                    <option value="1">1 Mes de Acceso</option>
+                                    <option value="2">2 Meses de Acceso</option>
+                                    <option value="6">6 Meses de Acceso</option>
+                                    <option value="12">12 Meses (1 Año) de Acceso</option>
+                                    <option value="99">Acceso Permanente</option>
                                 </select>
                             </div>
                             <button id="generate-link-btn" class="w-full p-3 bg-cyan-500 text-white font-bold rounded-lg text-lg glow-button">
@@ -491,7 +495,6 @@
         
         const params = new URLSearchParams(window.location.search);
         const data = params.get('data');
-        const adminKey = params.get('admin');
 
         if (data) {
             try {
@@ -517,29 +520,28 @@
                     <p class="text-lg text-gray-300">El enlace que has usado no es correcto o está dañado.</p>`;
                 portalSection.classList.add('flex');
             }
-        } else if (adminKey === 'sendero11') {
-            // MODO ADMIN
+        } else {
             portalContent.innerHTML = `
                 <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-48 h-48 mb-8 mx-auto">
-                <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">Modo Administrador: Ingresa los datos del cliente para generar su reporte y enlace.</p>
+                <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">Descubre los secretos que los números tienen para ti. Ingresa tus datos para revelar tu sendero cósmico.</p>
                 <form id="numerology-form" class="w-full max-w-lg space-y-4 mx-auto">
                     <div>
-                        <label for="name" class="sr-only">Nombre completo del cliente</label>
-                        <input type="text" id="name" placeholder="Nombre completo del cliente" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
+                        <label for="name" class="sr-only">Tu nombre completo</label>
+                        <input type="text" id="name" placeholder="Tu nombre completo" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
                     </div>
                     <div>
-                        <label for="birthdate" class="sr-only">Fecha de nacimiento del cliente</label>
+                        <label for="birthdate" class="sr-only">Tu fecha de nacimiento</label>
                         <input type="date" id="birthdate" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
                     </div>
                     <button type="submit" class="w-full p-3 bg-cyan-500 text-white font-bold rounded-lg text-lg glow-button">
-                        Generar Reporte
+                        Descifrar mi Código
                     </button>
                 </form>`;
             portalSection.classList.add('flex');
             
-            const adminForm = document.getElementById('numerology-form');
-            if (adminForm) {
-                adminForm.addEventListener('submit', (e) => {
+            const publicForm = document.getElementById('numerology-form');
+            if (publicForm) {
+                publicForm.addEventListener('submit', (e) => {
                     e.preventDefault();
                     const name = document.getElementById('name').value;
                     const birthdateStr = document.getElementById('birthdate').value;
@@ -548,16 +550,6 @@
                     }
                 });
             }
-        } else {
-            // MODO PÚBLICO BLOQUEADO
-            portalContent.innerHTML = `
-                <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-48 h-48 mb-8 mx-auto">
-                <h2 class="main-title text-4xl text-red-400 mb-4">Acceso no Autorizado</h2>
-                <p class="text-lg text-gray-300">Esta herramienta es accesible únicamente a través de un enlace personalizado.</p>
-                <a href="./Lindex.html" class="mt-8 inline-block px-8 py-3 bg-cyan-500 text-white font-bold rounded-lg glow-button">
-                    Conoce más sobre Sendero 11
-                </a>`;
-            portalSection.classList.add('flex');
         }
         
         function runCalculation(name, birthdateStr, duration, startDate, isAdminView) {
@@ -597,7 +589,6 @@
 
                 if (isAdminView) {
                     adminPanel.classList.remove('hidden');
-                    populateAdminDurationSelect();
                     displayAnalytics();
                 } else {
                     adminPanel.classList.add('hidden');
@@ -1062,21 +1053,6 @@
         });
 
         // --- Lógica de Analíticas de Admin ---
-        function populateAdminDurationSelect() {
-            const select = document.getElementById('admin-duration');
-            select.innerHTML = ''; // Limpiar opciones existentes
-            for (let i = 1; i <= 12; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = `${i} Mes(es) de Acceso`;
-                select.appendChild(option);
-            }
-            const permanentOption = document.createElement('option');
-            permanentOption.value = 99;
-            permanentOption.textContent = 'Acceso Permanente';
-            select.appendChild(permanentOption);
-        }
-
         const generateLinkBtnAdmin = document.getElementById('generate-link-btn');
         if (generateLinkBtnAdmin) {
             generateLinkBtnAdmin.addEventListener('click', () => {
@@ -1175,21 +1151,4 @@
     </script>
 </body>
 </html>
-```
 
-### **Paso 2: Las Instrucciones de Uso (Actualizadas)**
-
-El flujo de trabajo ahora es mucho más seguro y profesional:
-
-1.  **Para Trabajar (Modo Administrador):**
-    * Para generar un enlace para un nuevo cliente, **tú** debes ir a una dirección especial que funciona como tu "llave secreta":
-        **`https://numerologia-one.vercel.app/app.html?admin=sendero11`**
-    * Esta URL te mostrará el formulario de entrada. Ingresa los datos de tu cliente y, al calcular, verás el panel de administrador para generar su enlace y registrarlo en la base de datos.
-
-2.  **Para tus Clientes:**
-    * Ellos recibirán el enlace que tú generes (ej. `.../app.html?data=...`). Este enlace les dará acceso directo a su reporte, con el calendario y las opciones de PDF limitadas al paquete que compraron.
-
-3.  **Para el Público General:**
-    * Si alguien intenta entrar a `https://numerologia-one.vercel.app/app.html` sin un enlace válido, ahora verá un mensaje de "Acceso no Autorizado" y un botón que lo llevará a tu página de ventas (`Lindex.html`).
-
-¡Con esto, tu aplicación está completamente protegida y lista para operar de manera profesion
