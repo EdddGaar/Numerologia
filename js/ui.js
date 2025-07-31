@@ -1,10 +1,11 @@
 import { infoNumeros, sinergiaDetallada, astrologicalEvents, moonPhaseInfo } from './data.js';
-import { reducirNumero, calculateNameNumber, calculateKarmaNumbers, getMoonPhase, getZodiacSign, obtenerHoroscopo, traducirTexto } from './numerology.js';
+// Ya no se necesita 'traducirTexto'
+import { reducirNumero, calculateNameNumber, calculateKarmaNumbers, getMoonPhase, getZodiacSign, obtenerHoroscopo } from './numerology.js';
 
-// Variables que necesita este módulo para funcionar
+// Variables globales del módulo
 let currentUserData = {};
 let currentDate = new Date();
-let db; // Variable para la base de datos de Firebase
+let db;
 let logoBase64 = '';
 let selectedMonthsForPdf = 1;
 
@@ -91,7 +92,7 @@ export function runCalculation(name, birthdateStr, duration, startDate, isAdminV
         resultsSection.classList.remove('hidden');
         
         displayResults();
-        displayHoroscope(); // <-- LLAMADA A LA NUEVA FUNCIÓN
+        displayHoroscope();
 
         document.getElementById('calendar-title').textContent = `Calendario Numerológico para ${name.split(' ')[0]}`;
         document.getElementById('calendar-subtitle').textContent = `Nacimiento: ${birthdate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`;
@@ -146,35 +147,39 @@ function displayResults() {
     document.getElementById('karma-card').innerHTML = createKarmaCardContent('Karma', karma, 'Lecciones a aprender.');
 }
 
-// --- NUEVA FUNCIÓN PARA MOSTRAR EL HORÓSCOPO ---
 async function displayHoroscope() {
-    const day = currentUserData.birthdate.getDate();
-    const month = currentUserData.birthdate.getMonth() + 1;
-
-    const signo = getZodiacSign(day, month);
-    const signoCapitalizado = signo.charAt(0).toUpperCase() + signo.slice(1);
-
-    const horoscopoData = await obtenerHoroscopo(signo);
-    if (!horoscopoData) {
-        document.getElementById('horoscopo-loading').innerText = "No se pudo obtener el horóscopo de hoy.";
-        return;
-    }
-
-    const descripcionTraducida = await traducirTexto(horoscopoData.description);
-
     const horoscopoCard = document.getElementById('horoscopo-card');
-    horoscopoCard.innerHTML = `
-        <h3 class="text-2xl font-bold text-purple-300 mb-2">${signoCapitalizado}</h3>
-        <p class="text-gray-300 mb-4">${descripcionTraducida}</p>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mt-4 border-t border-white/10 pt-4">
-            <div><p class="text-gray-400">Color</p><p class="font-bold">${horoscopoData.color}</p></div>
-            <div><p class="text-gray-400">Compatibilidad</p><p class="font-bold">${horoscopoData.compatibility}</p></div>
-            <div><p class="text-gray-400">Número Suerte</p><p class="font-bold">${horoscopoData.lucky_number}</p></div>
-            <div><p class="text-gray-400">Humor</p><p class="font-bold">${horoscopoData.mood}</p></div>
-        </div>
-    `;
-}
+    try {
+        const day = currentUserData.birthdate.getDate();
+        const month = currentUserData.birthdate.getMonth() + 1;
 
+        const signo = getZodiacSign(day, month);
+        const signoCapitalizado = signo.charAt(0).toUpperCase() + signo.slice(1);
+
+        const horoscopoData = await obtenerHoroscopo(signo);
+        
+        if (!horoscopoData || !horoscopoData.description) {
+            throw new Error("La respuesta de nuestra API de horóscopo no fue válida.");
+        }
+
+        // Ya no necesitamos traducir, la IA nos da el texto en español
+        const descripcion = horoscopoData.description;
+
+        horoscopoCard.innerHTML = `
+            <h3 class="text-2xl font-bold text-purple-300 mb-2">${signoCapitalizado}</h3>
+            <p class="text-gray-300 mb-4">${descripcion}</p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mt-4 border-t border-white/10 pt-4">
+                <div><p class="text-gray-400">Color</p><p class="font-bold">${horoscopoData.color}</p></div>
+                <div><p class="text-gray-400">Compatibilidad</p><p class="font-bold">${horoscopoData.compatibility}</p></div>
+                <div><p class="text-gray-400">Número Suerte</p><p class="font-bold">${horoscopoData.lucky_number}</p></div>
+                <div><p class="text-gray-400">Humor</p><p class="font-bold">${horoscopoData.mood}</p></div>
+            </div>
+        `;
+    } catch (error) {
+        console.error("Error al mostrar el horóscopo:", error);
+        horoscopoCard.innerHTML = `<p class="text-yellow-400">El servicio de horóscopos no está disponible en este momento. Por favor, intenta de nuevo más tarde.</p>`;
+    }
+}
 
 export function showCardDetails(type) {
     const { caminoVida, alma, personalidad, destino, regalo, karma, anoPersonal } = currentUserData;
