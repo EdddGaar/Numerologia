@@ -1,5 +1,5 @@
 // Este archivo va en la carpeta: /api/horoscopo.js
-// Esta es nuestra nueva API que usa IA para generar horóscopos.
+// Esta es nuestra nueva API que usa OpenRouter para generar horóscopos gratis.
 
 export default async function handler(request, response) {
   // Damos permiso a nuestra app para leer la respuesta (CORS)
@@ -18,60 +18,65 @@ export default async function handler(request, response) {
     return response.status(400).json({ error: 'El signo es requerido' });
   }
 
-  // Capitalizamos el signo para el prompt
   const signoCapitalizado = signo.charAt(0).toUpperCase() + signo.slice(1);
 
   try {
-    // 1. Preparamos la petición para la API de Gemini
-    const apiKey = process.env.GEMINI_API_KEY; // Vercel manejará esta variable de entorno
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+    // 1. Preparamos la petición para la API de OpenRouter
+    const apiKey = process.env.OPENROUTER_API_KEY; // Usamos la nueva variable de entorno
+    const apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
 
-    const prompt = `Actúa como un astrólogo experto. Genera un horóscopo para el signo zodiacal '${signoCapitalizado}' para el día de hoy. El tono debe ser positivo y enfocado en el crecimiento personal. El idioma debe ser español mexicano. Proporciona una descripción, un número de la suerte, un color de la suerte, un signo zodiacal compatible para hoy, y un estado de ánimo (mood) para el día.`;
+    // Le pedimos a la IA que actúe como un astrólogo y que SIEMPRE responda con un JSON.
+    const prompt = `
+      Actúa como un astrólogo experto. Genera un horóscopo para el signo zodiacal '${signoCapitalizado}' para el día de hoy.
+      El tono debe ser positivo y enfocado en el crecimiento personal. El idioma debe ser español mexicano.
+      Tu respuesta DEBE ser únicamente un objeto JSON válido, sin texto adicional antes o después.
+      El objeto JSON debe tener las siguientes claves: "description", "lucky_number", "color", "compatibility", "mood".
+      Ejemplo de formato de respuesta:
+      {
+        "description": "Un día excelente para la creatividad. Tus ideas fluirán con facilidad y podrías recibir reconocimiento por tu ingenio. Confía en tu intuición.",
+        "lucky_number": "7",
+        "color": "Violeta",
+        "compatibility": "Acuario",
+        "mood": "Inspirado"
+      }
+    `;
 
     const payload = {
-      contents: [{
-        parts: [{ text: prompt }]
-      }],
-      generationConfig: {
-        response_mime_type: "application/json",
-        response_schema: {
-          type: "OBJECT",
-          properties: {
-            "description": { "type": "STRING" },
-            "lucky_number": { "type": "STRING" },
-            "color": { "type": "STRING" },
-            "compatibility": { "type": "STRING" },
-            "mood": { "type": "STRING" }
-          },
-          required: ["description", "lucky_number", "color", "compatibility", "mood"]
-        }
-      }
+      model: "deepseek/deepseek-chat", // Usamos el modelo gratuito de DeepSeek
+      messages: [{ role: "user", content: prompt }]
     };
 
-    // 2. Hacemos la llamada a la IA de Gemini
-    const geminiResponse = await fetch(apiUrl, {
+    // 2. Hacemos la llamada a la IA de OpenRouter
+    const openRouterResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        // ===== INICIO DE LA MEJORA =====
+        // Añadimos las cabeceras recomendadas por OpenRouter
+        'HTTP-Referer': 'https://numerologia-one.vercel.app', // URL de tu sitio en producción
+        'X-Title': 'Sendero 11 - Códice Numerológico' // Nombre de tu sitio
+        // ===== FIN DE LA MEJORA =====
       },
       body: JSON.stringify(payload)
     });
 
-    if (!geminiResponse.ok) {
-      const errorBody = await geminiResponse.text();
-      console.error("Error desde la API de Gemini:", errorBody);
-      throw new Error(`La API de Gemini no respondió correctamente. Status: ${geminiResponse.status}`);
+    if (!openRouterResponse.ok) {
+      const errorBody = await openRouterResponse.text();
+      console.error("Error desde la API de OpenRouter:", errorBody);
+      throw new Error(`La API de OpenRouter no respondió correctamente. Status: ${openRouterResponse.status}`);
     }
 
-    const geminiResult = await geminiResponse.json();
+    const openRouterResult = await openRouterResponse.json();
     
     // 3. Extraemos y parseamos la respuesta JSON del modelo
-    const candidate = geminiResult.candidates && geminiResult.candidates[0];
-    if (!candidate || !candidate.content || !candidate.content.parts || !candidate.content.parts[0].text) {
-        throw new Error("La respuesta de la API de Gemini no tiene el formato esperado.");
+    const messageContent = openRouterResult.choices && openRouterResult.choices[0].message.content;
+    if (!messageContent) {
+        throw new Error("La respuesta de la API de OpenRouter no tiene el formato esperado.");
     }
 
-    const horoscopoData = JSON.parse(candidate.content.parts[0].text);
+    // El modelo nos devuelve el JSON como un string, así que lo convertimos a un objeto real.
+    const horoscopoData = JSON.parse(messageContent);
 
     // 4. Devolvemos los datos del horóscopo a nuestra app
     return response.status(200).json(horoscopoData);
