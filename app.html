@@ -52,12 +52,12 @@
             <div class="pt-8">
                 <h2 class="main-title text-4xl sm:text-5xl font-bold text-center mb-12 text-white">Tu Códice Personal, <span id="user-name-title" class="text-cyan-400"></span></h2>
                 <div id="codice-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-center">
-                     <div id="camino-vida-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
-                     <div id="alma-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
-                     <div id="personalidad-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
-                     <div id="regalo-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
-                     <div id="karma-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
-                     <div id="ano-personal-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                      <div id="camino-vida-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                      <div id="alma-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                      <div id="personalidad-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                      <div id="regalo-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                      <div id="karma-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
+                      <div id="ano-personal-card" class="glassmorphism rounded-2xl h-56 info-card flex flex-col justify-between p-4"></div>
                 </div>
             </div>
             
@@ -146,19 +146,19 @@
                 <div class="glassmorphism p-6 rounded-2xl max-w-2xl mx-auto text-center">
                      <p class="text-center mb-4">Descarga tu códice y tu calendario numerológico en formato PDF.</p>
                      <div class="flex flex-wrap justify-center gap-2 mb-4" id="pdf-range-buttons">
-                        <button data-months="1" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">1 Mes</button>
-                        <button data-months="2" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">2 Meses</button>
-                        <button data-months="6" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">6 Meses</button>
-                        <button data-months="12" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">1 Año</button>
+                         <button data-months="1" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">1 Mes</button>
+                         <button data-months="2" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">2 Meses</button>
+                         <button data-months="6" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">6 Meses</button>
+                         <button data-months="12" class="pdf-range-button p-2 rounded-lg bg-white/10 border border-white/20">1 Año</button>
                      </div>
                      <button id="generate-pdf-btn" class="w-full p-3 bg-green-600 text-white font-bold rounded-lg text-lg glow-button">
-                        Generar y Descargar PDF
+                         Generar y Descargar PDF
                      </button>
                      <div id="pdf-loader" class="hidden mt-4">
-                        <p>Generando tu PDF, por favor espera... 🔮</p>
-                        <div class="w-full bg-gray-700 rounded-full h-2.5 mt-2">
-                            <div id="pdf-progress-bar" class="bg-cyan-400 h-2.5 rounded-full" style="width: 0%"></div>
-                        </div>
+                         <p>Generando tu PDF, por favor espera... 🔮</p>
+                         <div class="w-full bg-gray-700 rounded-full h-2.5 mt-2">
+                             <div id="pdf-progress-bar" class="bg-cyan-400 h-2.5 rounded-full" style="width: 0%"></div>
+                         </div>
                      </div>
                 </div>
             </div>
@@ -228,7 +228,11 @@
             6: "Tu regalo es la capacidad de nutrir y sanar. Tienes un don para crear belleza, armonía y cuidar de los demás.",
             7: "La sabiduría interior es tu regalo. Eres un pensador profundo con una gran intuición y la capacidad de ver más allá de lo superficial.",
             8: "Tu don es el poder de la manifestación. Tienes un talento natural para los negocios, las finanzas y el liderazgo ejecutivo.",
-            9: "La compasión es tu regalo. Tienes una habilidad innata para entender a los demás y un gran corazón para el servicio humanitario."
+            9: "La compasión es tu regalo. Tienes una habilidad innata para entender a los demás y un gran corazón para el servicio humanitario.",
+            // ===== INICIO DE LA CORRECCIÓN =====
+            11: "Tu regalo es la intuición maestra y la inspiración. Tienes una conexión directa con el mundo espiritual y la capacidad de canalizar ideas que iluminan a los demás.",
+            22: "Tu don es ser el maestro constructor. Tienes la habilidad única de tomar grandes visiones idealistas y manifestarlas en el mundo material para el beneficio de muchos."
+            // ===== FIN DE LA CORRECCIÓN =====
         },
         karma: {
             1: "Debes aprender a ser más independiente y a desarrollar la confianza en ti mismo, sin depender de la aprobación de los demás.",
@@ -454,7 +458,7 @@
           apiKey: "AIzaSyDUQc_DISkiXA5OFEEBDhKwYiYmUj98Eh4",
           authDomain: "numerologia-sendero11.firebaseapp.com",
           projectId: "numerologia-sendero11",
-          storageBucket: "numerologia-sendero11.firebasestorage.app",
+          storageBucket: "numerologia-sendero11.appspot.com",
           messagingSenderId: "1001480790018",
           appId: "1:1001480790018:web:fa17a029b86ad24638071b",
           measurementId: "G-ZLB0DYTJBJ"
@@ -1094,7 +1098,7 @@
                 };
 
                 const encodedData = btoa(JSON.stringify(dataToEncode));
-                const baseURL = window.location.origin + '/app.html'; // CORRECCIÓN CLAVE
+                const baseURL = window.location.href.split('?')[0]; // Versión robusta para generar el link
                 const finalURL = `${baseURL}?data=${encodedData}`;
 
                 document.getElementById('generated-link-container').classList.remove('hidden');
@@ -1118,10 +1122,16 @@
         if(copyLinkBtnAdmin) {
             copyLinkBtnAdmin.addEventListener('click', () => {
                 const linkInput = document.getElementById('generated-link');
-                linkInput.select();
-                document.execCommand('copy');
-                copyLinkBtnAdmin.textContent = '¡Copiado!';
-                setTimeout(() => { copyLinkBtnAdmin.textContent = 'Copiar'; }, 2000);
+                
+                navigator.clipboard.writeText(linkInput.value).then(() => {
+                    copyLinkBtnAdmin.textContent = '¡Copiado!';
+                    setTimeout(() => { copyLinkBtnAdmin.textContent = 'Copiar'; }, 2000);
+                }).catch(err => {
+                    console.error('Error al copiar el enlace: ', err);
+                    // Fallback para navegadores antiguos
+                    linkInput.select();
+                    document.execCommand('copy');
+                });
             });
         }
 
@@ -1164,4 +1174,3 @@
     </script>
 </body>
 </html>
-
