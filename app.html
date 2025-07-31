@@ -73,11 +73,7 @@
                             <div>
                                 <label for="admin-duration" class="sr-only">Duración del acceso</label>
                                 <select id="admin-duration" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition">
-                                    <option value="1">1 Mes de Acceso</option>
-                                    <option value="2">2 Meses de Acceso</option>
-                                    <option value="6">6 Meses de Acceso</option>
-                                    <option value="12">12 Meses (1 Año) de Acceso</option>
-                                    <option value="99">Acceso Permanente</option>
+                                    <!-- Opciones generadas por JS -->
                                 </select>
                             </div>
                             <button id="generate-link-btn" class="w-full p-3 bg-cyan-500 text-white font-bold rounded-lg text-lg glow-button">
@@ -521,20 +517,21 @@
                 portalSection.classList.add('flex');
             }
         } else {
+            // MODO PÚBLICO / ADMIN
             portalContent.innerHTML = `
                 <img src="https://raw.githubusercontent.com/EdddGaar/Numerologia/main/sendero%2011%20ver2.png" alt="Logo Sendero 11" class="w-48 h-48 mb-8 mx-auto">
-                <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">Descubre los secretos que los números tienen para ti. Ingresa tus datos para revelar tu sendero cósmico.</p>
+                <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">Ingresa los datos para generar un reporte.</p>
                 <form id="numerology-form" class="w-full max-w-lg space-y-4 mx-auto">
                     <div>
                         <label for="name" class="sr-only">Tu nombre completo</label>
-                        <input type="text" id="name" placeholder="Tu nombre completo" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
+                        <input type="text" id="name" placeholder="Nombre completo" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
                     </div>
                     <div>
                         <label for="birthdate" class="sr-only">Tu fecha de nacimiento</label>
                         <input type="date" id="birthdate" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 transition" required>
                     </div>
                     <button type="submit" class="w-full p-3 bg-cyan-500 text-white font-bold rounded-lg text-lg glow-button">
-                        Descifrar mi Código
+                        Descifrar Código
                     </button>
                 </form>`;
             portalSection.classList.add('flex');
@@ -589,6 +586,7 @@
 
                 if (isAdminView) {
                     adminPanel.classList.remove('hidden');
+                    populateAdminDurationSelect();
                     displayAnalytics();
                 } else {
                     adminPanel.classList.add('hidden');
@@ -1053,6 +1051,21 @@
         });
 
         // --- Lógica de Analíticas de Admin ---
+        function populateAdminDurationSelect() {
+            const select = document.getElementById('admin-duration');
+            select.innerHTML = ''; // Limpiar opciones existentes
+            for (let i = 1; i <= 12; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i} Mes(es) de Acceso`;
+                select.appendChild(option);
+            }
+            const permanentOption = document.createElement('option');
+            permanentOption.value = 99;
+            permanentOption.textContent = 'Acceso Permanente';
+            select.appendChild(permanentOption);
+        }
+
         const generateLinkBtnAdmin = document.getElementById('generate-link-btn');
         if (generateLinkBtnAdmin) {
             generateLinkBtnAdmin.addEventListener('click', () => {
